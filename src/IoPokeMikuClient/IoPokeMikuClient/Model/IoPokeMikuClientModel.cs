@@ -16,10 +16,12 @@ namespace IoPokeMikuClient.Model
 
         public MidiDeviceWatcher MidiDeviceWatcher { get; private set;}
         public PokeMiku PokeMiku { get; private set; }
+        public CloudClient Cloud { get; private set; }
 
         private IoPokeMikuClientModel()
         {
             MidiDeviceWatcher = new MidiDeviceWatcher();
+            Cloud = new CloudClient();
         }
 
         public bool Initialize()
@@ -66,7 +68,27 @@ namespace IoPokeMikuClient.Model
             }
 
             PokeMiku = new PokeMiku(deviceName, port);
+            Cloud.DataReceived += Cloud_DataReceived;
+
             return true;
+        }
+
+        private void Cloud_DataReceived(object sender, CloudClientEventArgs args)
+        {
+            var miku = PokeMiku;
+            if(miku == null)
+            {
+                return;
+            }
+
+            if (args.PitchInfo.midi == 0)
+            {
+                miku.NoteOff();
+            }
+            else
+            {
+                miku.NoteOn((byte)args.PitchInfo.midi);
+            }
         }
     }
 }

@@ -77,7 +77,7 @@ namespace IoPokeMikuClient.ViewModel
                     return;
                 }
                 await IoPokeMikuClientModel.Instance.SelectMidiDevice(SelectedDeviceName);
-                ViewModelLocator.Instance.NavigationService.NavigateTo("MainPage");
+                ViewModelLocator.Instance.NavigationService.NavigateTo("CloudConnectionPage");
             });
         }
 

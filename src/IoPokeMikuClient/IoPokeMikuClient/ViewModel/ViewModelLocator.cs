@@ -31,6 +31,7 @@ namespace IoPokeMikuClient.ViewModel
 
             SimpleIoc.Default.Register<MainPageViewModel>();
             SimpleIoc.Default.Register<MidiDeviceSelectionPageViewModel>();
+            SimpleIoc.Default.Register<CloudConnectionPageViewModel>();
         }
 
         private static INavigationService CreateNavigationService()
@@ -38,6 +39,7 @@ namespace IoPokeMikuClient.ViewModel
             var navigationService = new NavigationService();
             navigationService.Configure("MainPage", typeof(MainPage));
             navigationService.Configure("MidiDeviceSelectionPage", typeof(MidiDeviceSelectionPage));
+            navigationService.Configure("CloudConnectionPage", typeof(CloudConnectionPage));
             return navigationService;
         }
 
@@ -49,6 +51,11 @@ namespace IoPokeMikuClient.ViewModel
         public MidiDeviceSelectionPageViewModel MidiDeviceSelection
         {
             get { return ServiceLocator.Current.GetInstance<MidiDeviceSelectionPageViewModel>(); }
+        }
+
+        public CloudConnectionPageViewModel CloudConnection
+        {
+            get { return ServiceLocator.Current.GetInstance<CloudConnectionPageViewModel>(); }
         }
 
         public INavigationService NavigationService
