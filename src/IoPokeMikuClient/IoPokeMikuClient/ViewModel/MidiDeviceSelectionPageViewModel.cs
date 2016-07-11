@@ -76,7 +76,13 @@ namespace IoPokeMikuClient.ViewModel
                     StatusMessage = "device not selected";
                     return;
                 }
-                await IoPokeMikuClientModel.Instance.SelectMidiDevice(SelectedDeviceName);
+                bool selectResult = false;
+                selectResult = await IoPokeMikuClientModel.Instance.SelectMidiDevice(SelectedDeviceName);
+                if(!selectResult)
+                {
+                    StatusMessage = "device selection failed";
+                    return;
+                }
                 ViewModelLocator.Instance.NavigationService.NavigateTo("CloudConnectionPage");
             });
         }

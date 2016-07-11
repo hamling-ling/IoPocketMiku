@@ -11,8 +11,8 @@
         <StackPanel>
             <TextBlock Text="{Binding DeviceName}"/>
             <TextBlock Text="{Binding Note}"/>
-            <Button Width="100" Height="30" Command="{Binding NoteOnCommand}"/>
-            <Button Width="100" Height="30" Command="{Binding NoteOffCommand}"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" Content="Note On Test"/>
+            <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off Test"/>
         </StackPanel>
 
     </Grid>
