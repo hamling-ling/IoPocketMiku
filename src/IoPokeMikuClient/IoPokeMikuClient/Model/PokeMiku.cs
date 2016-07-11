@@ -10,34 +10,17 @@ using Windows.Storage.Streams;
 
 namespace IoPokeMikuClient.Model
 {
-    public class PokeMiku : ObservableObject
+    public class PokeMiku : MidiPlayer
     {
         Byte kMidiChannel = 0;
-        Byte kDefaultVelocity = 127;
 
-        IMidiOutPort m_port;
-        readonly Object m_lock = new Object();
-        string m_deviceName;
-        Byte m_note = 0;
-
-        public string DeviceName
+        public PokeMiku(string deviceName, IMidiOutPort port) : base(deviceName, port)
         {
-            get { return m_deviceName; }
         }
 
-        public Byte Note {
-            get { return m_note; }
-            private set
-            {
-                Set(() => Note, ref m_note, value);
-            }
-        }
-
-        public PokeMiku(string deviceName, IMidiOutPort port)
+        public override void SetupProgram()
         {
-            Debug.Assert(port != null);
-            m_port = port;
-            m_deviceName = deviceName;
+            SetLylic(0);
         }
 
         public void SetLylic(byte x)
@@ -48,43 +31,9 @@ namespace IoPokeMikuClient.Model
             Debug.WriteLine("SysEx Message sent");
         }
 
-        IBuffer StrHex2ByteStream(string hexStr)
-        {
-            var dataWriter = new DataWriter();
-
-            var lit = new[] { " " };
-            var split = hexStr.Split(new[] { ' ' });
-            foreach (var item in split)
-            {
-                if (string.IsNullOrWhiteSpace(item))
-                {
-                    continue;
-                }
-                var strByte = Convert.ToByte(item, 16);
-                dataWriter.WriteByte(strByte);
-            }
-            return dataWriter.DetachBuffer();
-        }
-
         public void NoteOn(Byte note)
         {
-            lock(m_lock)
-            {
-                var midiMsg = new MidiNoteOnMessage(kMidiChannel, note, kDefaultVelocity);
-                m_port.SendMessage(midiMsg);
-                m_note = note;
-            }
-            Debug.WriteLine("Note On " + note);
-        }
-
-        public void NoteOff()
-        {
-            lock(m_lock)
-            {
-                var midiMsg = new MidiNoteOffMessage(kMidiChannel, m_note, kDefaultVelocity);
-                m_port.SendMessage(midiMsg);
-            }
-            Debug.WriteLine("Note Off");
+            base.NoteOn(kMidiChannel, note);
         }
     }
 }
