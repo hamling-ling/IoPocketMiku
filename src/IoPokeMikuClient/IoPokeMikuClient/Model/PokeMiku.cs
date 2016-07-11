@@ -25,15 +25,15 @@ namespace IoPokeMikuClient.Model
 
         public void SetLylic(byte x)
         {
-            var buf = StrHex2ByteStream("F0 43 79 09 11 0A 01 00 F7");
+            var buf = Utility.StrHex2ByteStream("F0 43 79 09 11 0A 01 00 F7");
             var sysExMsg = new MidiSystemExclusiveMessage(buf);
             m_port.SendMessage(sysExMsg);
             Debug.WriteLine("SysEx Message sent");
         }
 
-        public void NoteOn(Byte note)
+        public override void NoteOn(Byte note)
         {
-            base.NoteOn(kMidiChannel, note);
+            base.NoteOn(kMidiChannel, note, kDefaultVelocity);
         }
     }
 }

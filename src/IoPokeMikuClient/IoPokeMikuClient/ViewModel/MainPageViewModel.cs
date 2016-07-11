@@ -13,7 +13,7 @@ namespace IoPokeMikuClient.ViewModel
 {
     public class MainPageViewModel : PokeMikuBaseViewModel
     {
-        public RelayCommand NoteOnCommand { get; set; }
+        public RelayCommand<string> NoteOnCommand { get; set; }
         public RelayCommand NoteOffCommand { get; set; }
 
         public string DeviceName
@@ -41,9 +41,13 @@ namespace IoPokeMikuClient.ViewModel
         {
             m_navigationService = navigationService;
 
-            NoteOnCommand = new RelayCommand(() =>
+            NoteOnCommand = new RelayCommand<string>((w) =>
             {
-                IoPokeMikuClientModel.Instance.PokeMiku.NoteOn(64);
+                int x = 0;
+                if (int.TryParse(w, out x))
+                {
+                    IoPokeMikuClientModel.Instance.PokeMiku.NoteOn((byte)(64 + x));
+                }
             });
             NoteOffCommand = new RelayCommand(() =>
             {
@@ -62,7 +66,7 @@ namespace IoPokeMikuClient.ViewModel
                     return;
                 }
 
-                var pokemiku = sender as PokeMiku;
+                var pokemiku = sender as MidiPlayer;
                 Note = pokemiku.Note.ToString();
             }
         }

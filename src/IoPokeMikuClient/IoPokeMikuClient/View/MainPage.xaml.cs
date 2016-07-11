@@ -35,5 +35,11 @@ namespace IoPokeMikuClient.View
             //var parameter = e.Parameter as string;
             base.OnNavigatedTo(e);
         }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            var vm = DataContext as MainPageViewModel;
+            vm.NoteOffCommand.Execute(null);
+        }
     }
 }

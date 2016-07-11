@@ -12,71 +12,73 @@ namespace IoPokeMikuClient.Model
 {
     public class Ochestra : MidiPlayer
     {
-        static readonly Byte kChannelNum = 12;
-        List<Byte> instsL = new List<Byte>();
-        List<Byte> instsM = new List<Byte>();
-        List<Byte> instsH = new List<Byte>();
-        Byte m_maxChannel = 0;
+        List<Instrument> channels = new List<Instrument>();
 
         public Ochestra(string deviceName, IMidiOutPort port) : base(deviceName, port)
         {
-            instsL = new List<Byte>{
-                33,// Accoustic Bass
-                43, //Cello
-                44, // Contrabass
-                58, // trombone
-                58, // tuba
-                61, // horn
-                71 // basoon
-            };
-            instsM = new List<Byte> {
-                49, // String Ensemble1
-                50, // String Ensemble 2
-                56, // ochestra all
-                57, // trumpet
-                62, // brass section
-                69, // Oboe
-                70, // english horn
-                72, // clarinet
-            };
-            instsH = new List<Byte> {
-                55, // voice ooh
-                41, // Violin
-                42, // Viola
-                73, // piccolo
-                74, // flute
+            const byte kMikuVelocity = 0;
+            const byte kInstVelocity = 127;
+            // element num less than 16
+            channels = new List<Instrument>{
+                /*
+                new Instrument( 0, 12, 0),// Hatsune Miku
+                //new Instrument( 33, -12, 127),// Accoustic Bass
+                //new Instrument( 43, -12, 127),//Cello
+                new Instrument( 44, -24, 127),// Contrabass
+                //new Instrument( 58, -12, 127),// trombone
+                new Instrument( 58, -24, 127),// tuba
+                //new Instrument( 61, -12, 127),// horn
+                //new Instrument( 71, -24, 127),// basoon
+                new Instrument( 49, 0, 127),// String Ensemble1
+                //new Instrument( 50, 0, 127),// String Ensemble 2
+                //new Instrument( 56, 0, 127),// ochestra all
+                //new Instrument( 57, 0, 127),// trumpet
+                new Instrument( 62, 0, 127),// brass section
+                //new Instrument( 69, 0, 127),// Oboe
+                //new Instrument( 70, 0, 127),// english horn
+                //new Instrument( 72, 0, 127),// clarinet
+                new Instrument( 55, 12, 127),// voice ooh
+                //new Instrument( 41, 12, 127),// Violin
+                //new Instrument( 42, 12, 127),// Viola
+                new Instrument( 73, 12, 127),// piccolo
+                //new Instrument( 74, 12, 127),// flute*/
+                new Instrument( 0, 12, kMikuVelocity),// Hatsune Miku, C
+                new Instrument( 44, -29, kInstVelocity),// Contrabass, G
+                new Instrument( 44, -24, kInstVelocity),// Contrabass, C
+                new Instrument( 44, -20, kInstVelocity),// Contrabass, E
+                new Instrument( 58, -29, kInstVelocity),// tuba, G
+                new Instrument( 58, -24, kInstVelocity),// tuba, C
+                new Instrument( 58, -20, kInstVelocity),// tuba, E
+                new Instrument( 49, -5, kInstVelocity),// String Ensemble1, G
+                new Instrument( 49, 0, kInstVelocity),// String Ensemble1, C
+                new Instrument( 62, -5, kInstVelocity),// brass section, G
+                new Instrument( 62, 0, kInstVelocity),// brass section, C
+                new Instrument( 62, 4, kInstVelocity),// brass section, E
+                new Instrument( 69, 7, kInstVelocity),// Oboe, G
+                new Instrument( 74, 12, kInstVelocity),// flute, C
+                new Instrument( 73, 16, kInstVelocity),// piccolo, E
             };
         }
 
         public override void SetupProgram()
         {
             byte counter = 0;
-            foreach (var inst in instsL)
+            foreach (var inst in channels)
             {
-                var msg = new MidiProgramChangeMessage(Convert.ToByte(counter), Convert.ToByte(inst));
-                counter++;
+                var msg = new MidiProgramChangeMessage(Convert.ToByte(counter), Convert.ToByte(inst.InstNum));
                 m_port.SendMessage(msg);
+                counter++;
             }
-            m_maxChannel = counter;
         }
 
-        public void NoteOn(Byte note)
+        public override void NoteOn(Byte note)
         {
-            Byte octave = 0xFF & 12;
             Byte counter = 0;
-            for(Byte i = counter; i < instsL.Count(); i++)
+            NoteOff();
+            foreach(var ch in channels)
             {
-                base.NoteOn(i, (byte)(note - octave));
+                base.NoteOn(counter, (byte)(note + ch.Delta), ch.Velocity);
                 counter++;
-            }
-            for (Byte i = counter; i < instsM.Count(); i++)
-            {
-                base.NoteOn(i, (byte)(note));
-                counter++;
-            }
-            for (Byte i = 0; i < instsH.Count(); i++)
-            {
-                base.NoteOn(i, (byte)(note + octave));
             }
         }
     }

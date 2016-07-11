@@ -5,13 +5,21 @@
     xmlns:local="using:IoPokeMikuClient.View"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Unloaded="Page_Unloaded"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
             <TextBlock Text="{Binding DeviceName}"/>
             <TextBlock Text="{Binding Note}"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" Content="Note On Test"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="0" Content="Note On Test1"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="2" Content="Note On Test2"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="4" Content="Note On Test3"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="5" Content="Note On Test4"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="7" Content="Note On Test5"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="9" Content="Note On Test6"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="11" Content="Note On Test7"/>
+            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="12" Content="Note On Test8"/>
             <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off Test"/>
         </StackPanel>
 

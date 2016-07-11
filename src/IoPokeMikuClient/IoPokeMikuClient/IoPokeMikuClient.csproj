@@ -102,8 +102,10 @@
     <Compile Include="Model\CloudClientEventArgs.cs" />
     <Compile Include="Model\ConnectionInfo.cs" />
     <Compile Include="Model\DataLogger.cs" />
+    <Compile Include="Model\Instrument.cs" />
     <Compile Include="Model\MidiPlayer.cs" />
     <Compile Include="Model\Ochestra.cs" />
+    <Compile Include="Model\Utility.cs" />
     <Compile Include="ViewModel\CloudConnectionPageViewModel.cs" />
     <Compile Include="View\CloudConnectionPage.xaml.cs">
       <DependentUpon>CloudConnectionPage.xaml</DependentUpon>

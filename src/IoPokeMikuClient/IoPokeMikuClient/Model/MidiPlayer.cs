@@ -12,13 +12,19 @@ namespace IoPokeMikuClient.Model
 {
     public class MidiPlayer : ObservableObject
     {
-        Byte kDefaultVelocity = 127;
+        #region Fields
+
+        public static readonly Byte kDefaultVelocity = 127;
 
         protected IMidiOutPort m_port;
         protected readonly Object m_lock = new Object();
         string m_deviceName;
         Byte m_note = 0;
-        Byte[] m_notes = new Byte[256];
+        Byte[] m_channels = new Byte[Byte.MaxValue];
+
+        #endregion
+
+        #region Properties
 
         public string DeviceName
         {
@@ -33,6 +39,10 @@ namespace IoPokeMikuClient.Model
             }
         }
 
+        #endregion
+
+        #region Ctor
+
         public MidiPlayer(string deviceName, IMidiOutPort port)
         {
             Debug.Assert(port != null);
@@ -40,66 +50,71 @@ namespace IoPokeMikuClient.Model
             m_deviceName = deviceName;
         }
 
+        #endregion
+
+        #region Public Methods
+
         public virtual void SetupProgram()
         {
         }
 
-        protected IBuffer StrHex2ByteStream(string hexStr)
+        public virtual void NoteOn(Byte note)
         {
-            var dataWriter = new DataWriter();
-
-            var lit = new[] { " " };
-            var split = hexStr.Split(new[] { ' ' });
-            foreach (var item in split)
-            {
-                if (string.IsNullOrWhiteSpace(item))
-                {
-                    continue;
-                }
-                var strByte = Convert.ToByte(item, 16);
-                dataWriter.WriteByte(strByte);
-            }
-            return dataWriter.DetachBuffer();
-        }
-
-        protected void NoteOn(Byte channel, Byte note)
-        {
-            lock(m_lock)
-            {
-                var midiMsg = new MidiNoteOnMessage(channel, note, kDefaultVelocity);
-                m_port.SendMessage(midiMsg);
-                m_note = note;
-                m_notes[channel] = note;
-            }
-            Debug.WriteLine("Note On " + note);
-        }
-
-        protected void NoteOff(Byte channel)
-        {
-            lock(m_lock)
-            {
-                var midiMsg = new MidiNoteOffMessage(channel, m_note, kDefaultVelocity);
-                m_port.SendMessage(midiMsg);
-                m_notes[channel] = 0;
-            }
-            Debug.WriteLine("Note Off");
+            NoteOn(0, note, kDefaultVelocity);
         }
 
         public void NoteOff()
         {
             lock (m_lock)
             {
-                for (Byte i = 0; i < Byte.MaxValue; i++)
+                for (Byte i = 0; i < m_channels.Count(); i++)
                 {
-                    if (m_notes[i] != 0)
+                    if (m_channels[i] != 0)
                     {
-                        var midiMsg = new MidiNoteOffMessage(i, m_note, kDefaultVelocity);
+                        var midiMsg = new MidiNoteOffMessage(i, m_channels[i], 0);
                         m_port.SendMessage(midiMsg);
-                        m_notes[i] = 0;
+                        m_channels[i] = 0;
                     }
                 }
             }
+            Note = 0;
             Debug.WriteLine("Note Off");
         }
+
+        #endregion
+
+        #region Protected Methods
+
+        protected void NoteOn(Byte channel, Byte note, Byte velocity)
+        {
+            lock(m_lock)
+            {
+                var midiMsg = new MidiNoteOnMessage(channel, note, velocity);
+                m_port.SendMessage(midiMsg);
+                m_note = note;
+                m_channels[channel] = note;
+            }
+            Debug.WriteLine("Note On " + note);
+        }
+
+        protected void NoteOff(Byte channel)
+        {
+            bool allOff = false;
+            lock(m_lock)
+            {
+                var midiMsg = new MidiNoteOffMessage(channel, m_note, kDefaultVelocity);
+                m_port.SendMessage(midiMsg);
+                m_channels[channel] = 0;
+                allOff = !m_channels.Any(w => w != 0);
+            }
+
+            if(allOff)
+            {
+                Note = 0;
+            }
+            Debug.WriteLine("Note Off");
+        }
+
+        #endregion
     }
 }

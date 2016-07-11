@@ -15,7 +15,7 @@ namespace IoPokeMikuClient.Model
         public static IoPokeMikuClientModel Instance { get { return s_instance; } }
 
         public MidiDeviceWatcher MidiDeviceWatcher { get; private set;}
-        public PokeMiku PokeMiku { get; private set; }
+        public MidiPlayer PokeMiku { get; private set; }
         public CloudClient Cloud { get; private set; }
 
         private IoPokeMikuClientModel()
@@ -67,7 +67,10 @@ namespace IoPokeMikuClient.Model
                 return false;
             }
 
-            PokeMiku = new PokeMiku(deviceName, port);
+            //PokeMiku = new PokeMiku(deviceName, port);
+            PokeMiku = new Ochestra(deviceName, port);
+            PokeMiku.SetupProgram();
+
             Cloud.DataReceived += Cloud_DataReceived;
 
             return true;
