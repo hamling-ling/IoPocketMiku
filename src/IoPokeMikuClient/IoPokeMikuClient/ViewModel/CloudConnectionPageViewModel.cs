@@ -13,22 +13,81 @@ namespace IoPokeMikuClient.ViewModel
 {
     public class CloudConnectionPageViewModel : PokeMikuBaseViewModel
     {
+        public RelayCommand LoadInfoCommand { get; set; }
         public RelayCommand ConnectCommand { get; set; }
 
-        private string m_noteStr = String.Empty;
+        public string AppId
+        {
+            get
+            {
+                return m_appId;
+            }
+            private set
+            {
+                if (m_appId != value)
+                {
+                    m_appId = value;
+                    RaisePropertyChanged("AppId");
+                }
+            }
+        }
+
+        public string DataStore
+        {
+            get
+            {
+                return m_dataStore;
+            }
+            private set
+            {
+                if (m_dataStore != value)
+                {
+                    m_dataStore = value;
+                    RaisePropertyChanged("DataStore");
+                }
+            }
+        }
+
         private readonly INavigationService m_navigationService;
+        private string m_appId = string.Empty;
+        private string m_dataStore = string.Empty;
 
         public CloudConnectionPageViewModel(INavigationService navigationService)
         {
             m_navigationService = navigationService;
 
-            ConnectCommand = new RelayCommand(() =>
+            LoadInfoCommand = new RelayCommand(async () =>
             {
-                var result = IoPokeMikuClientModel.Instance.Cloud.Connect();
-                if(result)
+                var info = await IoPokeMikuClientModel.Instance.Cloud.LoadSetting();
+                if(info.IsEmpty)
                 {
-                    ViewModelLocator.Instance.NavigationService.NavigateTo("MainPage");
+                    AppId = info.AppId;
+                    DataStore = info.DataStore;
                 }
+                AppId = "catipxwt08x";
+                DataStore = "test1";
+            });
+
+            ConnectCommand = new RelayCommand(async () =>
+            {
+                if(string.IsNullOrEmpty(AppId) || string.IsNullOrEmpty(DataStore))
+                {
+                    return;
+                }
+
+                bool result = false;
+                result = await IoPokeMikuClientModel.Instance.Cloud.SaveSetting(new ConnectionInfo(AppId, DataStore));
+                if(!result)
+                {
+                    return;
+                }
+
+                result = await IoPokeMikuClientModel.Instance.Cloud.Connect();
+                if(!result)
+                {
+                    return;
+                }
+                ViewModelLocator.Instance.NavigationService.NavigateTo("MainPage");
             });
         }
     }

@@ -2,32 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using Windows.Storage;
 
 namespace IoPokeMikuClient.Model
 {
-    public struct ConnectionInfo
-    {
-        public string brokerHostName;
-        public int brokerPort;
-        public string userName;
-        public string password;
-    }
-
-    public class CloudClientEventArgs : EventArgs
-    {
-        public PitchInfo PitchInfo { get; private set; }
-
-        public CloudClientEventArgs(PitchInfo info)
-        {
-            PitchInfo = info;
-        }
-    }
-
     public class CloudClient
     {
         public delegate void CloudClientEventHandler(object sender, CloudClientEventArgs args);
@@ -40,31 +24,87 @@ namespace IoPokeMikuClient.Model
         {
         }
 
-        public bool Connect()
+        public async Task<bool> Connect()
         {
-            ConnectionInfo info;
-            LoadSetting(out info);
+            ConnectionInfo info = await LoadSetting();
             Connect(info);
+
             return true;
         }
 
-        private void LoadSetting(out ConnectionInfo info)
+        public async Task<bool> SaveSetting(ConnectionInfo info)
         {
-            info.brokerHostName = "";
-            info.userName = "";
-            info.brokerPort = 0;
-            info.password = "";
+            bool ret = false;
+            StorageFolder folder = ApplicationData.Current.LocalFolder;
+            StorageFile file = null;
+            try
+            {
+                file = await folder.CreateFileAsync("setting.json", CreationCollisionOption.ReplaceExisting);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("setting file not found. " + Environment.NewLine + ex.ToString());
+            }
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(info);
+                await FileIO.WriteTextAsync(file, json);
+                ret = true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                Debug.WriteLine("file not found. " + ex.ToString());
+            }
+            catch (JsonSerializationException ex)
+            {
+                Debug.WriteLine("Parse failed" + ex.ToString());
+            }
+            return ret;
+        }
+
+        public async Task<ConnectionInfo> LoadSetting()
+        {
+            StorageFolder folder = ApplicationData.Current.LocalFolder;
+            var info = new ConnectionInfo();
+            StorageFile file = null;
+            try
+            {
+                file = await folder.GetFileAsync("setting.json");
+            } catch(Exception ex)
+            {
+                Debug.WriteLine("setting file not found. " + Environment.NewLine + ex.ToString());
+            }
+            if(file == null)
+            {
+                return info;
+            }
+
+            try
+            {
+                string json = await FileIO.ReadTextAsync(file);
+                info = JsonConvert.DeserializeObject<ConnectionInfo>(json);
+            }
+            catch(FileNotFoundException ex)
+            {
+                Debug.WriteLine("file not found. " + ex.ToString());
+            }
+            catch (JsonSerializationException ex)
+            {
+                Debug.WriteLine("Parse failed" + ex.ToString());
+            }
+            return info;
         }
 
         private void Connect(ConnectionInfo info)
         {
             // SSL使用時はtrue、CAを指定
-            m_client = new MqttClient(info.brokerHostName, info.brokerPort, false, MqttSslProtocols.None);
+            m_client = new MqttClient(info.BrokerHostName, info.BrokerPort, false, MqttSslProtocols.None);
             // clientidを生成
             string clientId = Guid.NewGuid().ToString();
-            m_client.Connect(clientId, info.userName, info.password);
+            m_client.Connect(clientId, info.UserName, info.Password);
             //{AppID}/{データストア名}/{push|send|set|remove}
-            Subscribe("catipxwt08x/test1/push");
+            Subscribe(info.TopicName);
         }
 
         private void OnReceive(object sender, MqttMsgPublishEventArgs e)

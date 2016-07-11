@@ -61,7 +61,7 @@ namespace IoPokeMikuClient.Model
                 return false;
             }
 
-            var port = await MidiOutPort.FromIdAsync(device.Id);
+            IMidiOutPort port = await MidiOutPort.FromIdAsync(device.Id);
             if(port == null)
             {
                 return false;

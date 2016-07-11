@@ -99,6 +99,8 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\CloudClient.cs" />
+    <Compile Include="Model\CloudClientEventArgs.cs" />
+    <Compile Include="Model\ConnectionInfo.cs" />
     <Compile Include="ViewModel\CloudConnectionPageViewModel.cs" />
     <Compile Include="View\CloudConnectionPage.xaml.cs">
       <DependentUpon>CloudConnectionPage.xaml</DependentUpon>
@@ -153,7 +155,11 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <SDKReference Include="Microsoft.Midi.GmDls, Version=10.0.10586.0">
+      <Name>Microsoft General MIDI DLS for Universal Windows Apps</Name>
+    </SDKReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
