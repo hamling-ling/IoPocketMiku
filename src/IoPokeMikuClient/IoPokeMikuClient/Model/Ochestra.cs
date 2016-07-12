@@ -51,7 +51,7 @@ namespace IoPokeMikuClient.Model
                 new Instrument( 58, -20, kInstVelocity),// tuba, E
                 new Instrument( 49, -5, kInstVelocity),// String Ensemble1, G
                 new Instrument( 49, 0, kInstVelocity),// String Ensemble1, C
-                new Instrument( 62, -5, kInstVelocity),// brass section, G
+                new Percussion( 0, 49, kInstVelocity),// symbal
                 new Instrument( 62, 0, kInstVelocity),// brass section, C
                 new Instrument( 62, 4, kInstVelocity),// brass section, E
                 new Instrument( 69, 7, kInstVelocity),// Oboe, G
@@ -77,7 +77,7 @@ namespace IoPokeMikuClient.Model
             NoteOff();
             foreach(var ch in channels)
             {
-                base.NoteOn(counter, (byte)(note + ch.Delta), ch.Velocity);
+                base.NoteOn(counter, ch.GetNote(note), ch.Velocity);
                 counter++;
             }
         }
