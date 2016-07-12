@@ -10,11 +10,11 @@ using Windows.Storage.Streams;
 
 namespace IoPokeMikuClient.Model
 {
-    public class Ochestra : MidiPlayer
+    public class Orchestra : MidiPlayer
     {
         List<Instrument> channels = new List<Instrument>();
 
-        public Ochestra(string deviceName, IMidiOutPort port) : base(deviceName, port)
+        public Orchestra(string deviceName, IMidiOutPort port) : base(deviceName, port)
         {
             const byte kMikuVelocity = 0;
             const byte kInstVelocity = 127;

@@ -15,10 +15,11 @@ namespace IoPokeMikuClient.ViewModel
     {
         public RelayCommand<string> NoteOnCommand { get; set; }
         public RelayCommand NoteOffCommand { get; set; }
+        public RelayCommand<string> SelectPlayerCommand { get; set; }
 
         public string DeviceName
         {
-            get { return IoPokeMikuClientModel.Instance.PokeMiku.DeviceName; }
+            get { return IoPokeMikuClientModel.Instance.PlayerSelector.Player.DeviceName; }
         }
 
         public string Note
@@ -46,14 +47,29 @@ namespace IoPokeMikuClient.ViewModel
                 int x = 0;
                 if (int.TryParse(w, out x))
                 {
-                    IoPokeMikuClientModel.Instance.PokeMiku.NoteOn((byte)(64 + x));
+                    IoPokeMikuClientModel.Instance.PlayerSelector.Player.NoteOn((byte)(64 + x));
                 }
             });
             NoteOffCommand = new RelayCommand(() =>
             {
-                IoPokeMikuClientModel.Instance.PokeMiku.NoteOff();
+                IoPokeMikuClientModel.Instance.PlayerSelector.Player.NoteOff();
             });
-            IoPokeMikuClientModel.Instance.PokeMiku.PropertyChanged += PokeMiku_PropertyChanged;
+            SelectPlayerCommand = new RelayCommand<string>((w) =>
+            {
+                PlayerKind kind = PlayerKind.MikuSolo;
+                if (w == "MikuSolo")
+                {
+                    kind = PlayerKind.MikuSolo;
+                } else if(w == "MikuChorus")
+                {
+                    kind = PlayerKind.MikuChorus;
+                } else if(w == "Orchestra")
+                {
+                    kind = PlayerKind.Orchestra;
+                }
+                IoPokeMikuClientModel.Instance.ChangePlayer(kind);
+            });
+            IoPokeMikuClientModel.Instance.PlayerSelector.Player.PropertyChanged += PokeMiku_PropertyChanged;
         }
 
         private void PokeMiku_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -15,7 +15,7 @@ namespace IoPokeMikuClient.Model
         public static IoPokeMikuClientModel Instance { get { return s_instance; } }
 
         public MidiDeviceWatcher MidiDeviceWatcher { get; private set;}
-        public MidiPlayer PokeMiku { get; private set; }
+        public PlayerSelector PlayerSelector { get; private set; }
         public CloudClient Cloud { get; private set; }
 
         private IoPokeMikuClientModel()
@@ -67,30 +67,40 @@ namespace IoPokeMikuClient.Model
                 return false;
             }
 
-            //PokeMiku = new PokeMiku(deviceName, port);
-            PokeMiku = new Ochestra(deviceName, port);
-            PokeMiku.SetupProgram();
+            PlayerSelector = new PlayerSelector(deviceName, port);
+            PlayerSelector.SelectPlayer(PlayerKind.MikuSolo);
 
             Cloud.DataReceived += Cloud_DataReceived;
 
             return true;
         }
 
+        public bool ChangePlayer(PlayerKind playerKind)
+        {
+            if(PlayerSelector == null)
+            {
+                return false;
+            }
+
+            PlayerSelector.SelectPlayer(playerKind);
+            return true;
+        }
+
         private void Cloud_DataReceived(object sender, CloudClientEventArgs args)
         {
-            var miku = PokeMiku;
-            if(miku == null)
+            var player = PlayerSelector.Player;
+            if(player == null)
             {
                 return;
             }
 
             if (args.PitchInfo.midi == 0)
             {
-                miku.NoteOff();
+                player.NoteOff();
             }
             else
             {
-                miku.NoteOn((byte)args.PitchInfo.midi);
+                player.NoteOn((byte)args.PitchInfo.midi);
             }
         }
     }

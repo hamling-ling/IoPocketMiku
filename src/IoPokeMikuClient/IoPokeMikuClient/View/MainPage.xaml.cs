@@ -41,5 +41,22 @@ namespace IoPokeMikuClient.View
             var vm = DataContext as MainPageViewModel;
             vm.NoteOffCommand.Execute(null);
         }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combobox = sender as ComboBox;
+            if(combobox == null)
+            {
+                return;
+            }
+            if(combobox.SelectedValue == null)
+            {
+                return;
+            }
+
+            var vm = DataContext as MainPageViewModel;
+            string itemString = combobox.SelectedValue as string;
+            vm.NoteOffCommand.Execute(itemString);
+        }
     }
 }

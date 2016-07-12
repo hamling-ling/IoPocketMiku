@@ -104,7 +104,8 @@
     <Compile Include="Model\DataLogger.cs" />
     <Compile Include="Model\Instrument.cs" />
     <Compile Include="Model\MidiPlayer.cs" />
-    <Compile Include="Model\Ochestra.cs" />
+    <Compile Include="Model\Orchestra.cs" />
+    <Compile Include="Model\PlayerSelector.cs" />
     <Compile Include="Model\Utility.cs" />
     <Compile Include="ViewModel\CloudConnectionPageViewModel.cs" />
     <Compile Include="View\CloudConnectionPage.xaml.cs">
