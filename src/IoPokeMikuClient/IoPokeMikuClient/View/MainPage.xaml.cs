@@ -49,14 +49,15 @@ namespace IoPokeMikuClient.View
             {
                 return;
             }
-            if(combobox.SelectedValue == null)
+            if(combobox.SelectedItem == null)
             {
                 return;
             }
 
             var vm = DataContext as MainPageViewModel;
-            string itemString = combobox.SelectedValue as string;
-            vm.NoteOffCommand.Execute(itemString);
+            var cbItem = combobox.SelectedItem as ComboBoxItem;
+            string itemString = cbItem.Content as string;
+            vm.SelectPlayerCommand.Execute(itemString);
         }
     }
 }
