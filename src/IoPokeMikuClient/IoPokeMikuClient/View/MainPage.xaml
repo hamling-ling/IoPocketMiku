@@ -27,6 +27,6 @@
             <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="12" Content="Note On Test8"/>
             <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off Test"/>
         </StackPanel>
-
+        <local:Meter Freq="{Binding Freq}"/>
     </Grid>
 </Page>

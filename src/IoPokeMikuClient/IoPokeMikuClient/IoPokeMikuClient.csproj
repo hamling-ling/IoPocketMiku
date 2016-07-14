@@ -111,6 +111,7 @@
     <Compile Include="View\CloudConnectionPage.xaml.cs">
       <DependentUpon>CloudConnectionPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\DoubleScaleConverter.cs" />
     <Compile Include="View\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -123,6 +124,7 @@
     <Compile Include="ViewModel\MidiDeviceSelectionPageViewModel.cs" />
     <Compile Include="ViewModel\PokeMikuBaseViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\Meter.xaml.cs" />
     <Compile Include="View\MidiDeviceSelectionPage.xaml.cs">
       <DependentUpon>MidiDeviceSelectionPage.xaml</DependentUpon>
     </Compile>
@@ -153,6 +155,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Meter.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

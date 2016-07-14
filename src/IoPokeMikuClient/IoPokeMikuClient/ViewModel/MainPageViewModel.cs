@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Core;
 
 namespace IoPokeMikuClient.ViewModel
 {
@@ -35,7 +36,21 @@ namespace IoPokeMikuClient.ViewModel
             }
         }
 
+        public double Freq
+        {
+            get { return m_freq; }
+            private set
+            {
+                if (m_freq != value)
+                {
+                    m_freq = value;
+                    RaisePropertyChanged("Freq");
+                }
+            }
+        }
+
         private string m_noteStr = String.Empty;
+        private double m_freq = 0.0f;
         private readonly INavigationService m_navigationService;
 
         public MainPageViewModel(INavigationService navigationService)
@@ -70,15 +85,34 @@ namespace IoPokeMikuClient.ViewModel
                 IoPokeMikuClientModel.Instance.ChangePlayer(kind);
             });
             IoPokeMikuClientModel.Instance.PlayerSelector.Player.PropertyChanged += PokeMiku_PropertyChanged;
+            IoPokeMikuClientModel.Instance.Cloud.DataReceived += Cloud_DataReceived;
         }
 
-        private void PokeMiku_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private async void Cloud_DataReceived(object sender, CloudClientEventArgs args)
+        {
+            if (!DispatcherHelper.UIDispatcher.HasThreadAccess)
+            {
+                await DispatcherHelper.UIDispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    Cloud_DataReceived(sender, args);
+                });
+                return;
+            }
+
+            Freq = args.PitchInfo.f;
+        }
+
+        private async void PokeMiku_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "Note")
             {
                 if(!DispatcherHelper.UIDispatcher.HasThreadAccess)
                 {
-                    PokeMiku_PropertyChanged(sender, e);
+                    await DispatcherHelper.UIDispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        PokeMiku_PropertyChanged(sender, e);
+                    });
+                    
                     return;
                 }
 
