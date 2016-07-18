@@ -190,16 +190,6 @@ void loop()
 			milkcocoa.loop();
 		}
 		ResetMachine(mctx);
-		
-		{
-			unsigned long start = millis();
-			delay(500);
-			unsigned long end = millis();
-			
-			char buf[128] = {0};
-			snprintf(buf, sizeof(buf), "%lu %lu %lu", start, end, end-start);
-			Serial1.println(buf);
-		}
 	}
 
 	DestroyPeakDetectMachineContext(mctx);
@@ -233,20 +223,12 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	DLOG(xf);
 
 	DLOG("normalizing...");
-	float xf_min = 0;
-	float xf_max = 0;
 	for (int i = 0; i < N2; i++) {
 		xf[i].re = (xf[i].re - 512.0f)/1024.0f;
 		xf[i].im = 0.0f;
 		xf[N2 + i].re = 0.0f;
 		xf[N2 + i].im = 0.0f;
 		xf2[i] = xf[i].re * xf[i].re;
-		xf_min = min(xf[i].re, xf_min);
-		xf_max = max(xf[i].re, xf_max);
-	}
-	if(xf_max - xf_min < MIN_AMPLITUDE) {
-		ILOG("less than threshold");
-		//return ret;
 	}
 	DLOG("normalized");
 
