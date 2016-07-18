@@ -183,11 +183,12 @@ void loop()
         	elem.setValue("midi", pitchInfo.midiNote);
         	milkcocoa.push(MILKCOCOA_DATASTORE, &elem);
         	DLOG(elem.toCharArray());
+        	milkcocoa.loop();
 		} else {
 			DLOG("no edge");
 		}
 		{
-			milkcocoa.loop();
+			//milkcocoa.loop();
 		}
 		ResetMachine(mctx);
 	}
@@ -224,7 +225,7 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 
 	DLOG("normalizing...");
 	for (int i = 0; i < N2; i++) {
-		xf[i].re = (xf[i].re - 512.0f)/1024.0f;
+		xf[i].re = (xf[i].re - 512.0f)/1023.0f;
 		xf[i].im = 0.0f;
 		xf[N2 + i].re = 0.0f;
 		xf[N2 + i].im = 0.0f;
@@ -284,21 +285,21 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	
 	PeakInfo_t keyMaximums[1] = { 0 };
 	int keyMaxLen = 0;
-	GetKeyMaximums(mctx, 0.8f, keyMaximums, 1, &keyMaxLen);
+	GetKeyMaximums(mctx, 0.95f, keyMaximums, 1, &keyMaxLen);
 	if (0 < keyMaxLen) {
 		float delta = 0;
 		char tmp[128] = { 0 };
 		if (ParabolicInterp(mctx, keyMaximums[0].index, _nsdf, N2, &delta)) {
-			snprintf(tmp, sizeof(tmp), "delta %f\n", delta);
-			DLOG(tmp);
+			//snprintf(tmp, sizeof(tmp), "delta %f\n", delta);
+			//DLOG(tmp);
 		}
 		
 		float freq = FREQ_PER_SAMPLE / (keyMaximums[0].index + delta);
 		const float k = log10f(pow(2.0f, 1.0f / 12.0f));
 		uint16_t midi = (uint16_t)round(log10f(freq / 27.5f) / k) + 21;
 		
-		snprintf(tmp, sizeof(tmp), "freq=%f Hz, note=%s\n", freq, kNoteStrings[midi % 12]);
-		ILOG(tmp);
+		//snprintf(tmp, sizeof(tmp), "freq=%f Hz, note=%s\n", freq, kNoteStrings[midi % 12]);
+		//ILOG(tmp);
 		pitchInfo->freq = freq;
 		pitchInfo->midiNote = midi;
 		
