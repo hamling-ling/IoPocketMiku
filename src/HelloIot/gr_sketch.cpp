@@ -30,21 +30,21 @@ static void onpush(DataElement *pelem);
 // debug
 #define LOG_Serial			Serial1
 #define LOG_NEWLINE			"\r\n"
-#define DEBUG_OUTPUT_NUM    512
+#define DEBUG_OUTPUT_NUM    N
 #define ELOG				DebugPrint
 #define WLOG				DebugPrint
 #define ILOG				DebugPrint
 //#define DLOG				DebugPrint
 #define DLOG
 
-#define N					512		// fft sampling num(last half is 0 pad)
-#define LOG2N				9		// log2(N)
+#define N					1024		// fft sampling num(last half is 0 pad)
+#define LOG2N				10		// log2(N)
 #define N2					(N/2)	// sampling num of analog input
 #define N_ADC				N2
 #define T1024_1024			(45.336000000000006f)	// adc speedd(time to take 1024x1024 samples in sec)
 #define T_PER_SAMPLE		(T1024_1024/1024.0f/1024.0f)	// factor to compute index to freq
 #define FREQ_PER_SAMPLE		((float)(1.0f/T_PER_SAMPLE))
-#define MIN_AMPLITUDE		(30.0f/1024.0f)
+#define MIN_AMPLITUDE		(20.0f/1024.0f)
 
 typedef struct PitchInfo_t {
     float freq;
@@ -223,6 +223,7 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	DLOG("raw data --");
 	DLOG(xf);
 
+	float maxAmp = 0.0f;
 	DLOG("normalizing...");
 	for (int i = 0; i < N2; i++) {
 		xf[i].re = (xf[i].re - 512.0f)/1023.0f;
@@ -230,8 +231,14 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 		xf[N2 + i].re = 0.0f;
 		xf[N2 + i].im = 0.0f;
 		xf2[i] = xf[i].re * xf[i].re;
+		maxAmp = max(maxAmp, xf[i].re);
 	}
 	DLOG("normalized");
+
+	if(maxAmp < MIN_AMPLITUDE) {
+		DLOG(".");
+		return 1;
+	}
 
 	DLOG("-- normalized input signal");
 	DLOG(xf);
@@ -285,7 +292,7 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	
 	PeakInfo_t keyMaximums[1] = { 0 };
 	int keyMaxLen = 0;
-	GetKeyMaximums(mctx, 0.95f, keyMaximums, 1, &keyMaxLen);
+	GetKeyMaximums(mctx, 0.9f, keyMaximums, 1, &keyMaxLen);
 	if (0 < keyMaxLen) {
 		float delta = 0;
 		char tmp[128] = { 0 };

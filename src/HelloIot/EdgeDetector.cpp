@@ -1,8 +1,9 @@
 #include "EdgeDetector.h"
+#include <string.h>
 
-
-EdgeDetector::EdgeDetector(int val) : _history({0}), _lastNotifiedVal(0)
+EdgeDetector::EdgeDetector(int val) : _lastNotifiedVal(0)
 {
+    memset(_history, 0, sizeof(_history));
 }
 
 EdgeDetector::~EdgeDetector()
