@@ -62,7 +62,7 @@ namespace IoPokeMikuClient.ViewModel
                 int x = 0;
                 if (int.TryParse(w, out x))
                 {
-                    IoPokeMikuClientModel.Instance.PlayerSelector.Player.NoteOn((byte)(64 + x));
+                    IoPokeMikuClientModel.Instance.PlayerSelector.Player.NoteOn((byte)(60 + x));
                 }
             });
             NoteOffCommand = new RelayCommand(() =>
