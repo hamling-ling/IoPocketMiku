@@ -108,7 +108,7 @@ void GetKeyMaximums(MachineContext_t* ctx, float filter, PeakInfo_t* list, int l
 	*num = counter;
 }
 
- bool ParabolicInterp(MachineContext_t* ctx, int index, float* xs, int N, float* x)
+bool ParabolicInterp(MachineContext_t* ctx, int index, float* xs, int N, float* x)
 {
 	if (0 == index || N <= index + 1) {
 		return false;
@@ -116,13 +116,13 @@ void GetKeyMaximums(MachineContext_t* ctx, float filter, PeakInfo_t* list, int l
 	
 	//use Ragrange interpolation
 	// consider (-1,y0),(0,y1),(1,y2)
-	// at x = (y0 - y2) / (2 * (y0 + y2) - y1) , y'=0
+	// at x = (y0-y2)/(2*(y0+y2)-4*y1), y'=0
 	float y0 = xs[index - 1];
 	float y1 = xs[index + 0];
 	float y2 = xs[index + 1];
 	
 	float num = y0 - y2;
-	float denom = ((y0 + y2) * 2.0f) - y1;
+	float denom = 2.0f * (y0 + y2) - 4.0f * y1;
 	if (denom == 0) {
 		return false;
 	}

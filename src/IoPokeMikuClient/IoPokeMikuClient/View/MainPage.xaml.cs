@@ -55,6 +55,11 @@ namespace IoPokeMikuClient.View
             }
 
             var vm = DataContext as MainPageViewModel;
+            if(vm == null)
+            {
+                return;
+            }
+
             var cbItem = combobox.SelectedItem as ComboBoxItem;
             string itemString = cbItem.Content as string;
             vm.SelectPlayerCommand.Execute(itemString);

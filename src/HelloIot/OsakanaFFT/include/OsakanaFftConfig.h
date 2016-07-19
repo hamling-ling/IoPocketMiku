@@ -8,9 +8,7 @@
 #define USE_TWIDDLE_TABLE_N512
 #endif
 
-#if 1 // N=1024, floating point
-#define USE_BIT_REVERSE_N1024
-#define USE_TWIDDLE_TABLE_N1024
+#if 1 // floating point
 #endif
 
 #endif

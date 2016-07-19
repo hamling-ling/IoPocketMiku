@@ -7,12 +7,13 @@
 #include "OsakanaFft.h"
 #include "PeakDetectMachine.h"
 #include "EdgeDetector.h"
+#include "StopWatch.h"
 
 #define ESP_Serial      Serial3
-#define WLAN_SSID       ""
-#define WLAN_PASS       ""
-#define MILKCOCOA_APP_ID      ""
-#define MILKCOCOA_DATASTORE   ""
+#define WLAN_SSID       "MouseComputer MADOSMA Q501 7033"
+#define WLAN_PASS       "G0/w6203"
+#define MILKCOCOA_APP_ID      "catipxwt08x"
+#define MILKCOCOA_DATASTORE   "test1"
 #define MILKCOCOA_SERVERPORT  1883
 
 //////////////////////////////////////////////////////////////////////
@@ -36,6 +37,8 @@ static void onpush(DataElement *pelem);
 #define ILOG				DebugPrint
 //#define DLOG				DebugPrint
 #define DLOG
+//#define STOPWATCH(msg)      StopWatch sw(msg);
+#define STOPWATCH(msg)
 
 #define N					1024		// fft sampling num(last half is 0 pad)
 #define LOG2N				10		// log2(N)
@@ -44,7 +47,7 @@ static void onpush(DataElement *pelem);
 #define T1024_1024			(45.336000000000006f)	// adc speedd(time to take 1024x1024 samples in sec)
 #define T_PER_SAMPLE		(T1024_1024/1024.0f/1024.0f)	// factor to compute index to freq
 #define FREQ_PER_SAMPLE		((float)(1.0f/T_PER_SAMPLE))
-#define MIN_AMPLITUDE		(20.0f/1024.0f)
+#define MIN_AMPLITUDE		(5.0f/1023.0f)
 
 typedef struct PitchInfo_t {
     float freq;
@@ -209,6 +212,7 @@ static void onpush(DataElement *pelem) {
 static void ReadData()
 {
 	DLOG("sampling...");
+	STOPWATCH("sampling");
 	for(int i = 0; i < N2; i++) {
 		int val = analogRead(0);
 		xf[i].re = (float)val;
@@ -218,6 +222,8 @@ static void ReadData()
 
 static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchInfo_t* pitchInfo)
 {
+    //StopWatch sw("DetectPitch()");
+    
     DLOG("ENT DetectPitch");
     int ret = -1;
 	DLOG("raw data --");
@@ -225,13 +231,17 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 
 	float maxAmp = 0.0f;
 	DLOG("normalizing...");
-	for (int i = 0; i < N2; i++) {
-		xf[i].re = (xf[i].re - 512.0f)/1023.0f;
-		xf[i].im = 0.0f;
-		xf[N2 + i].re = 0.0f;
-		xf[N2 + i].im = 0.0f;
-		xf2[i] = xf[i].re * xf[i].re;
-		maxAmp = max(maxAmp, xf[i].re);
+	{
+	    
+	    STOPWATCH("normalize");
+    	for (int i = 0; i < N2; i++) {
+    		xf[i].re = (xf[i].re - 512.0f)/1023.0f;
+    		xf[i].im = 0.0f;
+    		xf[N2 + i].re = 0.0f;
+    		xf[N2 + i].im = 0.0f;
+    		xf2[i] = xf[i].re * xf[i].re;
+    		maxAmp = max(maxAmp, xf[i].re);
+    	}
 	}
 	DLOG("normalized");
 
@@ -245,12 +255,14 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 
 	DLOG("-- fft/N");
 	{
+	    STOPWATCH("fft");
 		OsakanaFft(ctx, xf);
 	}
 	DLOG(xf);
 
 	DLOG("-- power spectrum");
 	{
+	    STOPWATCH("power spectrum");
 		for (int i = 0; i < N; i++) {
 			xf[i].re = xf[i].re * xf[i].re + xf[i].im * xf[i].im;
 			xf[i].im = 0.0f;
@@ -259,11 +271,16 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	DLOG(xf);
 
 	DLOG("-- IFFT");
-	OsakanaIfft(ctx, xf);
+	{
+	    
+	    STOPWATCH("ifft");
+	    OsakanaIfft(ctx, xf);
+	}
 	DLOG(xf);
 
 	{
-		_mf[0] = xf[0].re * 4.0f;
+	    STOPWATCH("sq sum");
+		_mf[0] = xf[0].re;
 		for (int t = 1; t < N2; t++) {
 			_mf[t] = _mf[t - 1] - xf2[t - 1] + xf2[t];
 		}
@@ -274,10 +291,11 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	// nsdf
 	float* _nsdf = _mf; // reuse buffer
 	{
+	    STOPWATCH("nsdf");
 		for (int t = 0; t < N2; t++) {
 			float mt = _mf[t] + 0.01f; // add small number to avoid 0 div
 			_nsdf[t] = xf[t].re / mt;
-			_nsdf[t] = _nsdf[t] * 2.0f * 2.0f;
+			_nsdf[t] = _nsdf[t] * 2.0f;
 		}
 	}
 	DLOG("-- _nsdf");
@@ -285,6 +303,7 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 
 	DLOG("-- pitch detection");
 	{
+	    STOPWATCH("curve anal");
 		for (int i = 0; i < N2; i++) {
 			Input(mctx, _nsdf[i]);
 		}
@@ -292,9 +311,9 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 	
 	PeakInfo_t keyMaximums[1] = { 0 };
 	int keyMaxLen = 0;
-	GetKeyMaximums(mctx, 0.9f, keyMaximums, 1, &keyMaxLen);
+	GetKeyMaximums(mctx, 0.8f, keyMaximums, 1, &keyMaxLen);
 	if (0 < keyMaxLen) {
-		float delta = 0;
+		float delta = 0.0f;
 		char tmp[128] = { 0 };
 		if (ParabolicInterp(mctx, keyMaximums[0].index, _nsdf, N2, &delta)) {
 			//snprintf(tmp, sizeof(tmp), "delta %f\n", delta);
@@ -302,15 +321,18 @@ static int DetectPitch(OsakanaFftContext_t* ctx, MachineContext_t* mctx, PitchIn
 		}
 		
 		float freq = FREQ_PER_SAMPLE / (keyMaximums[0].index + delta);
-		const float k = log10f(pow(2.0f, 1.0f / 12.0f));
-		uint16_t midi = (uint16_t)round(log10f(freq / 27.5f) / k) + 21;
-		
-		//snprintf(tmp, sizeof(tmp), "freq=%f Hz, note=%s\n", freq, kNoteStrings[midi % 12]);
-		//ILOG(tmp);
-		pitchInfo->freq = freq;
-		pitchInfo->midiNote = midi;
-		
-		ret = 0;
+		// discard too low freq(must be noise from AC adapter)
+		if(100.0f <= freq) {
+			const float k = log10f(pow(2.0f, 1.0f / 12.0f));
+			uint16_t midi = (uint16_t)round(log10f(freq / 27.5f) / k) + 21;
+			
+			//snprintf(tmp, sizeof(tmp), "freq=%f Hz, note=%s\n", freq, kNoteStrings[midi % 12]);
+			//ILOG(tmp);
+			pitchInfo->freq = freq;
+			pitchInfo->midiNote = midi;
+			
+			ret = 0;
+		}
 	}
 
 	DLOG("finished");
