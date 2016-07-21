@@ -60,9 +60,26 @@ namespace IoPokeMikuClient.View
                 return;
             }
 
-            var cbItem = combobox.SelectedItem as ComboBoxItem;
-            string itemString = cbItem.Content as string;
+            string itemString = combobox.SelectedItem as string;
             vm.SelectPlayerCommand.Execute(itemString);
+        }
+
+        private void ComboBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            var combobox = sender as ComboBox;
+            if (combobox == null)
+            {
+                return;
+            }
+
+            var vm = DataContext as MainPageViewModel;
+            if (vm == null)
+            {
+                return;
+            }
+
+            string itemString = combobox.SelectedItem as string;
+            vm.LoadDefaultValueCommand.Execute(null);
         }
     }
 }

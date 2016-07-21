@@ -12,20 +12,27 @@
         <StackPanel>
             <TextBlock Text="{Binding DeviceName}"/>
             <TextBlock Text="{Binding Note}"/>
-            <ComboBox SelectionChanged="ComboBox_SelectionChanged">
-                <ComboBoxItem Content="MikuSolo"/>
-                <ComboBoxItem Content="MikuChorus"/>
-                <ComboBoxItem Content="Orchestra"/>
+            <ComboBox SelectionChanged="ComboBox_SelectionChanged"
+                      SelectedItem="{Binding SelectedMode, Mode=TwoWay}"
+                      ItemsSource="{Binding ModeList}"
+                      Loaded="ComboBox_Loaded"
+                      Width="300">
+                <!--<ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding}" Margin="2.5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>-->
+                <!--<ComboBoxItem Content="MikuSolo"/>
+                <ComboBoxItem Content="Orchestra"/>-->
             </ComboBox>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="0" Content="Note On Test1"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="2" Content="Note On Test2"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="4" Content="Note On Test3"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="5" Content="Note On Test4"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="7" Content="Note On Test5"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="9" Content="Note On Test6"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="11" Content="Note On Test7"/>
-            <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="12" Content="Note On Test8"/>
-            <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off Test"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="0" Content="Do"/>
+                <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="4" Content="Mi"/>
+                <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="7" Content="So"/>
+                <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off"/>
+            </StackPanel>
         </StackPanel>
         <local:Meter Freq="{Binding Freq}"/>
     </Grid>

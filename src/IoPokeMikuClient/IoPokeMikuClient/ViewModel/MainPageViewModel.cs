@@ -17,6 +17,7 @@ namespace IoPokeMikuClient.ViewModel
         public RelayCommand<string> NoteOnCommand { get; set; }
         public RelayCommand NoteOffCommand { get; set; }
         public RelayCommand<string> SelectPlayerCommand { get; set; }
+        public RelayCommand LoadDefaultValueCommand { get; set; }
 
         public string DeviceName
         {
@@ -49,8 +50,37 @@ namespace IoPokeMikuClient.ViewModel
             }
         }
 
+        public string SelectedMode
+        {
+            get { return m_mode;  }
+            set
+            {
+                if(m_mode != value)
+                {
+                    m_mode = value;
+                    RaisePropertyChanged("SelectedMode");
+                }
+            }
+        }
+
+        public ReadOnlyCollection<string> ModeList
+        {
+            get { return m_modeList; }
+            set
+            {
+                if(m_modeList != value)
+                {
+                    m_modeList = value;
+                    RaisePropertyChanged("ModeList");
+                }
+            }
+        }
+
         private string m_noteStr = String.Empty;
         private double m_freq = 0.0f;
+        private ReadOnlyCollection<string> m_modeList = new ReadOnlyCollection<string>(new []{ "MikuSolo", "Orchestra" });
+        private string m_mode = string.Empty;
+
         private readonly INavigationService m_navigationService;
 
         public MainPageViewModel(INavigationService navigationService)
@@ -84,6 +114,11 @@ namespace IoPokeMikuClient.ViewModel
                 }
                 IoPokeMikuClientModel.Instance.ChangePlayer(kind);
             });
+            LoadDefaultValueCommand = new RelayCommand(() =>
+            {
+                SelectedMode = m_modeList.FirstOrDefault<string>();
+            });
+
             IoPokeMikuClientModel.Instance.PlayerSelector.Player.PropertyChanged += PokeMiku_PropertyChanged;
             IoPokeMikuClientModel.Instance.Cloud.DataReceived += Cloud_DataReceived;
         }
