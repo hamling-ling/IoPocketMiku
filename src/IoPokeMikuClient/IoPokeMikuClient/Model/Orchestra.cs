@@ -74,11 +74,14 @@ namespace IoPokeMikuClient.Model
         public override void NoteOn(Byte note)
         {
             Byte counter = 0;
-            NoteOff();
-            foreach(var ch in channels)
+            lock (m_lock)
             {
-                base.NoteOn(counter, ch.GetNote(note), ch.Velocity);
-                counter++;
+                NoteOff();
+                foreach (var ch in channels)
+                {
+                    base.NoteOn(counter, ch.GetNote(note), ch.Velocity);
+                    counter++;
+                }
             }
         }
     }

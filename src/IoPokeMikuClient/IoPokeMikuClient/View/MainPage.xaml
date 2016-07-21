@@ -16,16 +16,7 @@
                       SelectedItem="{Binding SelectedMode, Mode=TwoWay}"
                       ItemsSource="{Binding ModeList}"
                       Loaded="ComboBox_Loaded"
-                      Width="300">
-                <!--<ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding}" Margin="2.5"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>-->
-                <!--<ComboBoxItem Content="MikuSolo"/>
-                <ComboBoxItem Content="Orchestra"/>-->
+                      Width="150">
             </ComboBox>
             <StackPanel Orientation="Horizontal">
                 <Button Height="30" Command="{Binding NoteOnCommand}" CommandParameter="0" Content="Do"/>
