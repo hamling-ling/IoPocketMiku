@@ -4,15 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{EEF17A1D-E332-49CD-B39E-B4F12E0389AD}</ProjectGuid>
+    <ProjectGuid>{91B08887-4043-44FF-9A46-BBA197FDD13D}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IoPokeMikuClient</RootNamespace>
     <AssemblyName>IoPokeMikuClient</AssemblyName>
     <DefaultLanguage>ja-JP</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10586.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -89,25 +89,34 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <Content Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Model\CloudClient.cs" />
     <Compile Include="Model\CloudClientEventArgs.cs" />
     <Compile Include="Model\ConnectionInfo.cs" />
     <Compile Include="Model\DataLogger.cs" />
     <Compile Include="Model\Instrument.cs" />
+    <Compile Include="Model\IoPokeMikuClientModel.cs" />
+    <Compile Include="Model\MidiDeviceWatcher.cs" />
     <Compile Include="Model\MidiPlayer.cs" />
     <Compile Include="Model\Orchestra.cs" />
+    <Compile Include="Model\PitchInfo.cs" />
     <Compile Include="Model\PlayerSelector.cs" />
+    <Compile Include="Model\PokeMiku.cs" />
     <Compile Include="Model\Utility.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\CloudConnectionPageViewModel.cs" />
+    <Compile Include="ViewModel\MainPageViewModel.cs" />
+    <Compile Include="ViewModel\MidiDeviceSelectionPageViewModel.cs" />
+    <Compile Include="ViewModel\PokeMikuBaseViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="View\CloudConnectionPage.xaml.cs">
       <DependentUpon>CloudConnectionPage.xaml</DependentUpon>
     </Compile>
@@ -115,16 +124,9 @@
     <Compile Include="View\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Model\IoPokeMikuClientModel.cs" />
-    <Compile Include="Model\MidiDeviceWatcher.cs" />
-    <Compile Include="Model\PitchInfo.cs" />
-    <Compile Include="Model\PokeMiku.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModel\MainPageViewModel.cs" />
-    <Compile Include="ViewModel\MidiDeviceSelectionPageViewModel.cs" />
-    <Compile Include="ViewModel\PokeMikuBaseViewModel.cs" />
-    <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\Meter.xaml.cs" />
+    <Compile Include="View\Meter.xaml.cs">
+      <DependentUpon>Meter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\MidiDeviceSelectionPage.xaml.cs">
       <DependentUpon>MidiDeviceSelectionPage.xaml</DependentUpon>
     </Compile>
@@ -150,9 +152,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="View\CloudConnectionPage.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\CloudConnectionPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -163,12 +169,12 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\MidiDeviceSelectionPage.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <SDKReference Include="Microsoft.Midi.GmDls, Version=10.0.10586.0">
+    <SDKReference Include="Microsoft.Midi.GmDls, Version=10.0.14393.0">
       <Name>Microsoft General MIDI DLS for Universal Windows Apps</Name>
     </SDKReference>
   </ItemGroup>

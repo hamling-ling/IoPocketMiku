@@ -7,11 +7,11 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="d4925bb3-56b3-456b-801c-79b708144b8b"
+    Name="bf56d5a1-0ada-417a-817f-8b7238107322"
     Publisher="CN=nobuh"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="d4925bb3-56b3-456b-801c-79b708144b8b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="bf56d5a1-0ada-417a-817f-8b7238107322" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>IoPokeMikuClient</DisplayName>
