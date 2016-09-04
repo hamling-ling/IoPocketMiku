@@ -27,8 +27,14 @@ namespace IoPokeMikuClient.Model
         public async Task<bool> Connect()
         {
             ConnectionInfo info = await LoadSetting();
-            Connect(info);
-
+            try
+            {
+                Connect(info);
+            } catch(Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+                return false;
+            }
             return true;
         }
 
