@@ -1,8 +1,6 @@
-﻿using IoPokeMikuClient.Model;
-using IoPokeMikuClient.ViewModel;
+﻿using IoPokeMikuClient.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -24,33 +22,25 @@ namespace IoPokeMikuClient.View
     /// <summary>
     /// それ自体で使用できる空白ページまたはフレーム内に移動できる空白ページ。
     /// </summary>
-    public sealed partial class MidiDeviceSelectionPage : Page
+    public sealed partial class BleSelectionPage : Page
     {
-        public MidiDeviceSelectionPage()
+        public BleSelectionPage()
         {
             this.InitializeComponent();
-            DataContext = ViewModelLocator.Instance.MidiDeviceSelection;
-
-            Model.IoPokeMikuClientModel.Instance.Initialize(Model.SourceKind.BleSource);
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            // do something with param if neccessary
-            //var parameter = e.Parameter as string;
-            base.OnNavigatedTo(e);
+            DataContext = ViewModelLocator.Instance.BleSelection;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            var vm = DataContext as MidiDeviceSelectionPageViewModel;
+            var vm = DataContext as BleDeviceSelectionPageViewModel;
             vm.StartSearchingCommand.Execute(null);
         }
 
         private void deviceList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var vm = DataContext as MidiDeviceSelectionPageViewModel;
+            var vm = DataContext as BleDeviceSelectionPageViewModel;
             vm.SelectedDevice = deviceList.SelectedValue as DeviceInformation;
         }
+
     }
 }

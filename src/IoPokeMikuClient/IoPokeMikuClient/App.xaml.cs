@@ -51,7 +51,6 @@ namespace IoPokeMikuClient
 #endif
 
             DispatcherHelper.Initialize();
-
             Frame rootFrame = Window.Current.Content as Frame;
 
             // ウィンドウに既にコンテンツが表示されている場合は、アプリケーションの初期化を繰り返さずに、

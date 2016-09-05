@@ -8,29 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using Windows.Devices.Enumeration;
 using Windows.Storage;
 
 namespace IoPokeMikuClient.Model
 {
-    public class CloudClient
+    public class CloudClient : TunerSource
     {
-        public delegate void CloudClientEventHandler(object sender, CloudClientEventArgs args);
-
-        public event CloudClientEventHandler DataReceived;
-
         private MqttClient m_client;
 
         public CloudClient()
         {
         }
 
-        public async Task<bool> Connect()
+        public override async Task<bool> Connect(DeviceInformation device)
         {
             ConnectionInfo info = await LoadSetting();
             try
             {
                 Connect(info);
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
                 return false;
@@ -77,11 +75,12 @@ namespace IoPokeMikuClient.Model
             try
             {
                 file = await folder.GetFileAsync("setting.json");
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Debug.WriteLine("setting file not found. " + Environment.NewLine + ex.ToString());
             }
-            if(file == null)
+            if (file == null)
             {
                 return info;
             }
@@ -91,7 +90,7 @@ namespace IoPokeMikuClient.Model
                 string json = await FileIO.ReadTextAsync(file);
                 info = JsonConvert.DeserializeObject<ConnectionInfo>(json);
             }
-            catch(FileNotFoundException ex)
+            catch (FileNotFoundException ex)
             {
                 Debug.WriteLine("file not found. " + ex.ToString());
             }
@@ -119,12 +118,6 @@ namespace IoPokeMikuClient.Model
             string json = Encoding.UTF8.GetString(e.Message);
             Debug.WriteLine(json);
 
-            var handler = DataReceived;
-            if (handler == null)
-            {
-                return;
-            }
-
             RawData rd;
             try
             {
@@ -137,17 +130,17 @@ namespace IoPokeMikuClient.Model
             }
 
             var args = new CloudClientEventArgs(rd.pitch);
-            handler(this, args);
+            RaiseDataReceived(this, args);
         }
 
-        private void Publish(string topic, string msg)
+        protected override void Publish(string topic, string msg)
         {
             m_client.Publish(
                 topic, Encoding.UTF8.GetBytes(msg),
                 MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE, false);
         }
 
-        private void Subscribe(string topic)
+        protected override void Subscribe(string topic)
         {
             // callbackを登録
             m_client.MqttMsgPublishReceived += this.OnReceive;

@@ -4,28 +4,48 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Devices.Enumeration;
 using Windows.Devices.Midi;
 
 namespace IoPokeMikuClient.Model
 {
+    public enum SourceKind
+    {
+        CloudSource,
+        BleSource
+    }
+
     public sealed class IoPokeMikuClientModel
     {
         private static IoPokeMikuClientModel s_instance = new IoPokeMikuClientModel();
 
         public static IoPokeMikuClientModel Instance { get { return s_instance; } }
 
-        public MidiDeviceWatcher MidiDeviceWatcher { get; private set;}
+        public BleDeviceWatcher BleDeviceWatcher { get; private set; }
+        public MidiDeviceWatcher MidiDeviceWatcher { get; private set; }
         public PlayerSelector PlayerSelector { get; private set; }
-        public CloudClient Cloud { get; private set; }
+        public TunerSource Source { get; private set; }
+
+        public SourceKind SourceKind { get; private set;}
 
         private IoPokeMikuClientModel()
         {
             MidiDeviceWatcher = new MidiDeviceWatcher();
-            Cloud = new CloudClient();
+            BleDeviceWatcher = new BleDeviceWatcher();
         }
 
-        public bool Initialize()
+        public bool Initialize(SourceKind source)
         {
+            if (source == SourceKind.CloudSource)
+            {
+                Source = new CloudClient();
+            }
+            else
+            {
+                Source = new BleClient();
+            }
+            SourceKind = source;
+
             return true;
         }
 
@@ -34,30 +54,51 @@ namespace IoPokeMikuClient.Model
             MidiDeviceWatcher.Stop();
         }
 
-        public bool StartSearchingDevice()
+        public bool StartSearchingMidiDevice()
         {
             MidiDeviceWatcher.Start();
             return true;
         }
 
-        public void StopSearchingDevice()
+        public void StopSearchingMidiDevice()
         {
             MidiDeviceWatcher.Stop();
         }
 
-        public async Task<bool> SelectMidiDevice(string deviceName)
+        public bool StartSearchingSourceDevice()
         {
-            if(deviceName == null)
+            if(SourceKind != SourceKind.BleSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            BleDeviceWatcher.Start();
+            return true;
+        }
+
+        public void StopSearchingSourceDevice()
+        {
+            if (SourceKind != SourceKind.BleSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            BleDeviceWatcher.Stop();
+        }
+
+        public async Task<bool> SelectMidiDevice(DeviceInformation device)
+        {
+            if(device == null)
             {
                 // make it erro or release device ?
                 return false;
             }
 
             var devices = MidiDeviceWatcher.GetDeviceInformationCollection();
-            var device = devices.FirstOrDefault(w => w.Name == deviceName);
-            if(device == null)
+            var freshDevice = devices.FirstOrDefault(w => w.Id == device.Id);
+            if(freshDevice == null)
             {
-                Debug.WriteLine("device " + deviceName + " not found");
+                Debug.WriteLine("device " + device.Name + " not found");
                 return false;
             }
 
@@ -67,12 +108,31 @@ namespace IoPokeMikuClient.Model
                 return false;
             }
 
-            PlayerSelector = new PlayerSelector(deviceName, port);
+            PlayerSelector = new PlayerSelector(freshDevice.Name, port);
             PlayerSelector.SelectPlayer(PlayerKind.MikuSolo);
 
-            Cloud.DataReceived += Cloud_DataReceived;
+            Source.DataReceived += Cloud_DataReceived;
 
             return true;
+        }
+
+        public async Task<bool> SelectSourceDevice(DeviceInformation device)
+        {
+            if (SourceKind != SourceKind.BleSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool result = false;
+            try
+            {
+                result = await Source.Connect(device);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
+            return result;
         }
 
         public bool ChangePlayer(PlayerKind playerKind)

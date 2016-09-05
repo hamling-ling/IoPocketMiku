@@ -95,6 +95,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\BleClient.cs" />
+    <Compile Include="Model\BleDeviceWatcher.cs" />
     <Compile Include="Model\CloudClient.cs" />
     <Compile Include="Model\CloudClientEventArgs.cs" />
     <Compile Include="Model\ConnectionInfo.cs" />
@@ -107,13 +109,18 @@
     <Compile Include="Model\PitchInfo.cs" />
     <Compile Include="Model\PlayerSelector.cs" />
     <Compile Include="Model\PokeMiku.cs" />
+    <Compile Include="Model\TunerSource.cs" />
     <Compile Include="Model\Utility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModel\BleDeviceSelectionPageViewModel.cs" />
     <Compile Include="ViewModel\CloudConnectionPageViewModel.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="ViewModel\MidiDeviceSelectionPageViewModel.cs" />
     <Compile Include="ViewModel\PokeMikuBaseViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\BleSelectionPage.xaml.cs">
+      <DependentUpon>BleSelectionPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\CloudConnectionPage.xaml.cs">
       <DependentUpon>CloudConnectionPage.xaml</DependentUpon>
     </Compile>
@@ -149,6 +156,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="View\BleSelectionPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\CloudConnectionPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

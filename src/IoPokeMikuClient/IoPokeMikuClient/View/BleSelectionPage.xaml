@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="IoPokeMikuClient.View.MidiDeviceSelectionPage"
+    x:Class="IoPokeMikuClient.View.BleSelectionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:IoPokeMikuClient.View"
@@ -14,14 +14,13 @@
             </StackPanel>
         </DataTemplate>
     </Page.Resources>
-
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition MinHeight="100"/>
         </Grid.RowDefinitions>
         <ListBox Name="deviceList" Grid.Row="0"
-                 ItemsSource="{Binding PortList}"
+                 ItemsSource="{Binding DeviceList}"
                  ItemTemplate="{StaticResource DeviceInfoDataTemplate}"
                  SelectionChanged="deviceList_SelectionChanged"/>
         <Grid Grid.Row="1">

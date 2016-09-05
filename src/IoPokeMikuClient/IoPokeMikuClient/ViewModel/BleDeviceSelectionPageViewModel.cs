@@ -12,14 +12,14 @@ using Windows.Devices.Enumeration;
 
 namespace IoPokeMikuClient.ViewModel
 {
-    public class MidiDeviceSelectionPageViewModel : PokeMikuBaseViewModel
+    public class BleDeviceSelectionPageViewModel : PokeMikuBaseViewModel
     {
         public RelayCommand StartSearchingCommand { get; private set; }
         public RelayCommand StopSearchingCommand { get; private set; }
         public RelayCommand SelectDeviceCommand { get; private set; }
 
         private ObservableCollection<DeviceInformation> m_collection = new ObservableCollection<DeviceInformation>();
-        public ObservableCollection<DeviceInformation> PortList
+        public ObservableCollection<DeviceInformation> DeviceList
         {
             get
             {
@@ -29,7 +29,7 @@ namespace IoPokeMikuClient.ViewModel
             set
             {
                 m_collection = value;
-                RaisePropertyChanged("PortList");
+                RaisePropertyChanged("DeviceList");
             }
         }
 
@@ -58,16 +58,16 @@ namespace IoPokeMikuClient.ViewModel
 
         private string m_statusMessage = string.Empty;
 
-        public MidiDeviceSelectionPageViewModel()
+        public BleDeviceSelectionPageViewModel()
         {
-            IoPokeMikuClientModel.Instance.MidiDeviceWatcher.DeviceList.CollectionChanged += PortList_CollectionChanged;
+            IoPokeMikuClientModel.Instance.BleDeviceWatcher.DeviceList.CollectionChanged += PortList_CollectionChanged;
             StartSearchingCommand = new RelayCommand(() =>
             {
-                IoPokeMikuClientModel.Instance.StartSearchingMidiDevice();
+                IoPokeMikuClientModel.Instance.StartSearchingSourceDevice();
             });
             StopSearchingCommand = new RelayCommand(() =>
             {
-                IoPokeMikuClientModel.Instance.StopSearchingMidiDevice();
+                IoPokeMikuClientModel.Instance.StopSearchingSourceDevice();
             });
             SelectDeviceCommand = new RelayCommand(async () =>
             {
@@ -78,20 +78,13 @@ namespace IoPokeMikuClient.ViewModel
                     return;
                 }
                 bool selectResult = false;
-                selectResult = await IoPokeMikuClientModel.Instance.SelectMidiDevice(SelectedDevice);
+                selectResult = await IoPokeMikuClientModel.Instance.SelectSourceDevice(SelectedDevice);
                 if(!selectResult)
                 {
                     StatusMessage = "device selection failed";
                     return;
                 }
-                if (IoPokeMikuClientModel.Instance.SourceKind == SourceKind.CloudSource)
-                {
-                    ViewModelLocator.Instance.NavigationService.NavigateTo("CloudConnectionPage");
-                }
-                else
-                {
-                    ViewModelLocator.Instance.NavigationService.NavigateTo("BleSelectionPage");
-                }
+                ViewModelLocator.Instance.NavigationService.NavigateTo("MainPage");
             });
         }
 
@@ -99,7 +92,7 @@ namespace IoPokeMikuClient.ViewModel
         {
             var col = sender as ObservableCollection<DeviceInformation>;
             await DispatcherHelper.RunAsync(() => {
-                PortList = col;
+                DeviceList = col;
             });
         }
     }

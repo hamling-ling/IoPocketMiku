@@ -10,6 +10,7 @@
 //*********************************************************
 
 //using SDKTemplate;
+using GalaSoft.MvvmLight.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -27,10 +28,10 @@ namespace IoPokeMikuClient.Model
         internal DeviceWatcher m_deviceWatcher = null;
         internal DeviceInformationCollection m_deviceInformationCollection = null;
         bool m_enumerationCompleted = false;
-        ObservableCollection<string> m_portList = null;
+        ObservableCollection<DeviceInformation> m_deviceList = null;
         readonly string m_midiSelector;
 
-        public ObservableCollection<string> PortList { get { return m_portList; } }
+        public ObservableCollection<DeviceInformation> DeviceList { get { return m_deviceList; } }
 
         /// <summary>
         /// Constructor: Initialize and hook up Device Watcher events
@@ -40,7 +41,7 @@ namespace IoPokeMikuClient.Model
         {
             m_midiSelector = MidiOutPort.GetDeviceSelector();
             m_deviceWatcher = DeviceInformation.CreateWatcher(m_midiSelector);
-            m_portList = new ObservableCollection<string>();
+            m_deviceList = new ObservableCollection<DeviceInformation>();
 
             m_deviceWatcher.Added += DeviceWatcher_Added;
             m_deviceWatcher.Removed += DeviceWatcher_Removed;
@@ -102,20 +103,21 @@ namespace IoPokeMikuClient.Model
             if ((m_deviceInformationCollection == null) || (m_deviceInformationCollection.Count == 0))
             {
                 // Start with a clean list
-                m_portList.Clear();
-
-                m_portList.Add("No MIDI ports found");
+                m_deviceList.Clear();
             }
             // If devices are found, enumerate them and add them to the list
             else
             {
                 // Start with a clean list
-                m_portList.Clear();
+                m_deviceList.Clear();
 
-                foreach (var device in m_deviceInformationCollection)
+                await DispatcherHelper.RunAsync(() =>
                 {
-                    m_portList.Add(device.Name);
-                }
+                    foreach (var device in m_deviceInformationCollection)
+                    {
+                        m_deviceList.Add(device);
+                    }
+                });
             }
         }
 

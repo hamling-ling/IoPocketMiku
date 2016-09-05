@@ -58,7 +58,13 @@ namespace IoPokeMikuClient.ViewModel
 
             LoadInfoCommand = new RelayCommand(async () =>
             {
-                var info = await IoPokeMikuClientModel.Instance.Cloud.LoadSetting();
+                var cloud = IoPokeMikuClientModel.Instance.Source as CloudClient;
+                if(cloud == null)
+                {
+                    return;
+                }
+
+                var info = await cloud.LoadSetting();
                 if(info.IsEmpty)
                 {
                     AppId = info.AppId;
@@ -75,14 +81,20 @@ namespace IoPokeMikuClient.ViewModel
                     return;
                 }
 
+                var cloud = IoPokeMikuClientModel.Instance.Source as CloudClient;
+                if (cloud == null)
+                {
+                    return;
+                }
+
                 bool result = false;
-                result = await IoPokeMikuClientModel.Instance.Cloud.SaveSetting(new ConnectionInfo(AppId, DataStore));
+                result = await cloud.SaveSetting(new ConnectionInfo(AppId, DataStore));
                 if(!result)
                 {
                     return;
                 }
 
-                result = await IoPokeMikuClientModel.Instance.Cloud.Connect();
+                result = await cloud.Connect(null);
                 if(!result)
                 {
                     return;

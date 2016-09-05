@@ -120,7 +120,7 @@ namespace IoPokeMikuClient.ViewModel
             });
 
             IoPokeMikuClientModel.Instance.PlayerSelector.Player.PropertyChanged += PokeMiku_PropertyChanged;
-            IoPokeMikuClientModel.Instance.Cloud.DataReceived += Cloud_DataReceived;
+            IoPokeMikuClientModel.Instance.Source.DataReceived += Cloud_DataReceived;
         }
 
         private async void Cloud_DataReceived(object sender, CloudClientEventArgs args)
