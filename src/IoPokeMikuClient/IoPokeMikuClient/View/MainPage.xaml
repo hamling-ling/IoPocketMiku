@@ -25,6 +25,8 @@
                 <Button Height="30" Command="{Binding NoteOffCommand}" Content="Note Off"/>
             </StackPanel>
         </StackPanel>
-        <local:Meter Freq="{Binding Freq}"/>
+        <Viewbox>
+            <local:Meter Freq="{Binding Freq}"/>
+        </Viewbox>
     </Grid>
 </Page>

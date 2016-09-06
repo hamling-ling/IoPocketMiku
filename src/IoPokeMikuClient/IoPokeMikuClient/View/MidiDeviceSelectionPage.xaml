@@ -9,7 +9,7 @@
     Loaded="Page_Loaded">
     <Page.Resources>
         <DataTemplate x:Key="DeviceInfoDataTemplate">
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
                 <TextBlock Text="{Binding Name}"/>
             </StackPanel>
         </DataTemplate>

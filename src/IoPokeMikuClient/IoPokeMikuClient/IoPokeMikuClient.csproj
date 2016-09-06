@@ -105,6 +105,7 @@
     <Compile Include="Model\IoPokeMikuClientModel.cs" />
     <Compile Include="Model\MidiDeviceWatcher.cs" />
     <Compile Include="Model\MidiPlayer.cs" />
+    <Compile Include="Model\ModelUtility.cs" />
     <Compile Include="Model\Orchestra.cs" />
     <Compile Include="Model\PitchInfo.cs" />
     <Compile Include="Model\PlayerSelector.cs" />
