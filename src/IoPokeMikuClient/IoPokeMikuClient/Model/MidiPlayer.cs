@@ -33,7 +33,7 @@ namespace IoPokeMikuClient.Model
 
         public Byte Note {
             get { return m_note; }
-            private set
+            protected set
             {
                 Set(() => Note, ref m_note, value);
             }
@@ -61,6 +61,7 @@ namespace IoPokeMikuClient.Model
         public virtual void NoteOn(Byte note)
         {
             NoteOn(0, note, kDefaultVelocity);
+            Note = note;
         }
 
         public void NoteOff()
@@ -91,7 +92,6 @@ namespace IoPokeMikuClient.Model
             {
                 var midiMsg = new MidiNoteOnMessage(channel, note, velocity);
                 m_port.SendMessage(midiMsg);
-                m_note = note;
                 m_channels[channel] = note;
             }
             Debug.WriteLine("Note On " + note);

@@ -163,21 +163,24 @@ namespace IoPokeMikuClient.Model
         {
 
             Debug.WriteLine(sender.Uuid + " value changed :");
+            PrintGattEentArgs(args);
 
             var byteArray = args.CharacteristicValue.ToArray();
             UInt16 freq = 0;
-            if (byteArray.Length >= 2)
+            UInt16 midiNote = 0;
+            if (byteArray.Length >= 4)
             {
                 freq = BitConverter.ToUInt16(byteArray, 0);
-                Debug.WriteLine(freq + "Hz");
+                midiNote = BitConverter.ToUInt16(byteArray, 2);
+                Debug.WriteLine(freq + "Hz, midi=" + midiNote);
             }
 
-            var pitch = new PitchInfo() { f = freq, midi = 0 };
+            var pitch = new PitchInfo() { f = freq, midi = midiNote };
             var clientargs = new CloudClientEventArgs(pitch);
             RaiseDataReceived(this, clientargs);
         }
 
-        private void GattEentArgs(GattValueChangedEventArgs args)
+        private void PrintGattEentArgs(GattValueChangedEventArgs args)
         {
             StringBuilder builder = new StringBuilder();
             var byteArray = args.CharacteristicValue.ToArray();

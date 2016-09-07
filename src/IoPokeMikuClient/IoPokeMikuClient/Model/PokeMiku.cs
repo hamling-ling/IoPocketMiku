@@ -33,7 +33,13 @@ namespace IoPokeMikuClient.Model
 
         public override void NoteOn(Byte note)
         {
+            if (Note == note)
+            {
+                return;
+            }
+
             base.NoteOn(kMidiChannel, note, kDefaultVelocity);
+            Note = note;
         }
     }
 }

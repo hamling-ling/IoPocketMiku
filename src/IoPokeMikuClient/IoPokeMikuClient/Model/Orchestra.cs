@@ -73,6 +73,11 @@ namespace IoPokeMikuClient.Model
 
         public override void NoteOn(Byte note)
         {
+            if(Note == note)
+            {
+                return;
+            }
+
             Byte counter = 0;
             lock (m_lock)
             {
@@ -83,6 +88,7 @@ namespace IoPokeMikuClient.Model
                     counter++;
                 }
             }
+            Note = note;
         }
     }
 }
