@@ -10,7 +10,12 @@ namespace IoPokeMikuClient.Model
     {
         public static bool StartsWith(this Guid fullUuid, string partUuidStr)
         {
-            return fullUuid.ToString().StartsWith(partUuidStr);
+            return fullUuid.ToString().ToLower().StartsWith(partUuidStr.ToLower());
+        }
+
+        public static bool EndsWith(this Guid fullUuid, string partUuidStr)
+        {
+            return fullUuid.ToString().ToLower().EndsWith(partUuidStr.ToLower());
         }
     }
 }

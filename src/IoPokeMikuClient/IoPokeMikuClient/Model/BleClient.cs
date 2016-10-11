@@ -14,9 +14,9 @@ namespace IoPokeMikuClient.Model
 {
     public class BleClient : TunerSource
     {
-        readonly string kUuidTunerSvc = "0000a000";
-        readonly string kUuidFreqChar = "0000a001";
-        readonly string kUuidGainChar = "0000a002";
+        readonly string kUuidTunerSvcEnd = "90FF";
+        readonly string kUuidFreqCharEnd = "9033";
+        readonly string kUuidGainCharEnd = "9034";
 
         private DeviceInformation m_deviceInfo;
         private BluetoothLEDevice m_bleDevice;
@@ -56,7 +56,14 @@ namespace IoPokeMikuClient.Model
             m_deviceInfo = device;
             if (!device.Pairing.IsPaired)
             {
-                result = await device.Pairing.PairAsync();
+                //result = await device.Pairing.PairAsync();
+                var pairintKinds = DevicePairingKinds.ConfirmOnly;
+                var protectionLevel = DevicePairingProtectionLevel.None;
+                var customPairing = device.Pairing.Custom;
+                customPairing.PairingRequested += CustomPairing_PairingRequested;
+                result = await customPairing.PairAsync(pairintKinds, protectionLevel);
+                customPairing.PairingRequested -= CustomPairing_PairingRequested;
+
                 Debug.WriteLine("Pairing result = " + result.Status);
 
                 if (result == null)
@@ -92,6 +99,19 @@ namespace IoPokeMikuClient.Model
             Debug.WriteLine("bleDevice assigned " + bleDevice.DeviceId ?? "null");
 
             return bleDevice;
+        }
+
+        private void CustomPairing_PairingRequested(DeviceInformationCustomPairing sender, DevicePairingRequestedEventArgs args)
+        {
+            switch (args.PairingKind)
+            {
+                case DevicePairingKinds.ConfirmOnly:
+                    args.Accept();
+                    Debug.WriteLine("pairing request Accept");
+                    break;
+                default:
+                    break;
+            }
         }
 
         private async Task<bool> Subscribe(BluetoothLEDevice bleDevice)
@@ -143,19 +163,24 @@ namespace IoPokeMikuClient.Model
             {
                 return null;
             }
-
-            var tunerServices = from x in bleDevice.GattServices where x.Uuid.ToString().StartsWith(kUuidTunerSvc) select x;
+            // debug
+            var services = bleDevice.GattServices;
+            foreach(var x in services)
+            {
+                Debug.WriteLine("uuid=" + x.Uuid);
+            }
+            var tunerServices = from x in bleDevice.GattServices where x.Uuid.EndsWith(kUuidTunerSvcEnd) select x;
             if (!tunerServices.Any())
             {
                 return null;
             }
 
-            var tuner = bleDevice.GattServices.FirstOrDefault(w => w.Uuid.StartsWith(kUuidTunerSvc));
+            var tuner = bleDevice.GattServices.FirstOrDefault(w => w.Uuid.EndsWith(kUuidTunerSvcEnd));
             if (tuner == null)
             {
                 return null;
             }
-            var freqChars = tuner.GetAllCharacteristics().FirstOrDefault(w => w.Uuid.StartsWith(kUuidFreqChar));
+            var freqChars = tuner.GetAllCharacteristics().FirstOrDefault(w => w.Uuid.EndsWith(kUuidFreqCharEnd));
             return freqChars;
         }
 
@@ -170,8 +195,8 @@ namespace IoPokeMikuClient.Model
             UInt16 midiNote = 0;
             if (byteArray.Length >= 4)
             {
-                freq = BitConverter.ToUInt16(byteArray, 0);
-                midiNote = BitConverter.ToUInt16(byteArray, 2);
+                freq = (UInt16)((byteArray[0] << 8) | byteArray[1]);
+                midiNote = (UInt16)((byteArray[2] << 8) | byteArray[3]);
                 Debug.WriteLine(freq + "Hz, midi=" + midiNote);
             }
 

@@ -12,6 +12,8 @@ namespace IoPokeMikuClient.Model
 {
     public class BleDeviceWatcher
     {
+        static readonly string kDeviceNamePrefix = "KurumiTuner";
+
         ObservableCollection<DeviceInformation> m_deviceList = null;
 
         private DeviceWatcher m_watcher;
@@ -103,7 +105,7 @@ namespace IoPokeMikuClient.Model
             if (sender == m_watcher)
             {
                 Debug.WriteLine(deviceInfo.Name + " " + deviceInfo.Id + " added");
-                if (deviceInfo.Name.Contains("HRM1017"))
+                if (deviceInfo.Name.Contains(kDeviceNamePrefix))
                 {
                     m_deviceList.Add(deviceInfo);
                 }
