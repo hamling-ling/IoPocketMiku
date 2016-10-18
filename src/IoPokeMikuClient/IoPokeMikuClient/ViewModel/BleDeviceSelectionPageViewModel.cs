@@ -82,16 +82,27 @@ namespace IoPokeMikuClient.ViewModel
                 if(!selectResult)
                 {
                     StatusMessage = "device selection failed";
+
+                    try
+                    {
+                        IoPokeMikuClientModel.Instance.StopSearchingSourceDevice();
+                        IoPokeMikuClientModel.Instance.StartSearchingSourceDevice();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.ToString());
+                    }
                     return;
                 }
                 ViewModelLocator.Instance.NavigationService.NavigateTo("MainPage");
             });
         }
 
-        private async void PortList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void PortList_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var col = sender as ObservableCollection<DeviceInformation>;
-            await DispatcherHelper.RunAsync(() => {
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
                 DeviceList = col;
             });
         }

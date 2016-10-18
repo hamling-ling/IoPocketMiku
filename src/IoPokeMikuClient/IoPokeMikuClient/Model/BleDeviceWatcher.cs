@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Midi;
+using GalaSoft.MvvmLight.Threading;
 
 namespace IoPokeMikuClient.Model
 {
     public class BleDeviceWatcher
     {
         static readonly string kDeviceNamePrefix = "KurumiTuner";
-
-        ObservableCollection<DeviceInformation> m_deviceList = null;
+        readonly ObservableCollection<DeviceInformation> m_deviceList = new ObservableCollection<DeviceInformation>();
 
         private DeviceWatcher m_watcher;
 
@@ -27,7 +27,6 @@ namespace IoPokeMikuClient.Model
 
         internal BleDeviceWatcher()
         {
-            m_deviceList = new ObservableCollection<DeviceInformation>();
         }
 
         ~BleDeviceWatcher()
@@ -64,7 +63,14 @@ namespace IoPokeMikuClient.Model
                 m_watcher.Stopped -= DeviceWatcher_Stopped;
 
                 // Stop the watcher.
-                m_watcher.Stop();
+                try
+                {
+                    m_watcher.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
                 m_watcher = null;
             }
 
@@ -97,7 +103,13 @@ namespace IoPokeMikuClient.Model
             m_watcher.Stopped += DeviceWatcher_Stopped;
 
             // Start the watcher.
-            m_watcher.Start();
+            try
+            {
+                m_watcher.Start();
+            } catch(Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
         }
 
         private async void DeviceWatcher_Added(DeviceWatcher sender, DeviceInformation deviceInfo)
@@ -107,7 +119,15 @@ namespace IoPokeMikuClient.Model
                 Debug.WriteLine(deviceInfo.Name + " " + deviceInfo.Id + " added");
                 if (deviceInfo.Name.Contains(kDeviceNamePrefix))
                 {
-                    m_deviceList.Add(deviceInfo);
+                    await DispatcherHelper.RunAsync(() =>
+                    {
+                        var item = m_deviceList.FirstOrDefault(w => w.Id == deviceInfo.Id);
+                        if(item != null)
+                        {
+                            m_deviceList.Remove(item);
+                        }
+                        m_deviceList.Add(deviceInfo);
+                    });
                 }
             }
         }
@@ -117,6 +137,21 @@ namespace IoPokeMikuClient.Model
             if (sender == m_watcher)
             {
                 Debug.WriteLine(deviceInfoUpdate.Id + " updated");
+                DeviceInformation item = null;
+                await DispatcherHelper.RunAsync(() =>
+                {
+                    item = m_deviceList.FirstOrDefault(w => w.Id == deviceInfoUpdate.Id);
+                    if (item == null)
+                    {
+                        return;
+                    }
+                    if (item.Name.Contains(kDeviceNamePrefix))
+                    {
+                        item.Update(deviceInfoUpdate);
+                        var idx = m_deviceList.IndexOf(item);
+                        m_deviceList[idx] = item;
+                    }
+                });
             }
         }
 
@@ -124,12 +159,17 @@ namespace IoPokeMikuClient.Model
         {
             if (sender == m_watcher)
             {
-                var items = from x in m_deviceList where x.Id == deviceInfoUpdate.Id select x;
-                if (items.Any())
+                DeviceInformation item = null;
+                await DispatcherHelper.RunAsync(() =>
                 {
-                    m_deviceList.Remove(items.First());
+                    item = m_deviceList.FirstOrDefault(w => w.Id == deviceInfoUpdate.Id);
+                    if (item == null)
+                    {
+                        return;
+                    }
+                    m_deviceList.Remove(item);
                     Debug.WriteLine(deviceInfoUpdate.Id + " removed");
-                }
+                });
             }
         }
 
@@ -148,6 +188,5 @@ namespace IoPokeMikuClient.Model
                 Debug.Write("No longer watching for devices. " + sender.Status);
             }
         }
-
     }
 }

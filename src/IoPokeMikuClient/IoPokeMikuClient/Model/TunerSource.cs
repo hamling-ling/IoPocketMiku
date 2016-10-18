@@ -19,6 +19,10 @@ namespace IoPokeMikuClient.Model
             return true;
         }
 
+        public virtual void UpdateDeviceInfo(DeviceInformation device)
+        {
+        }
+
         protected virtual void Connect(ConnectionInfo info)
         {
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -32,6 +33,8 @@ namespace IoPokeMikuClient.Model
         {
             MidiDeviceWatcher = new MidiDeviceWatcher();
             BleDeviceWatcher = new BleDeviceWatcher();
+
+            BleDeviceWatcher.DeviceList.CollectionChanged += DeviceList_CollectionChanged;
         }
 
         public bool Initialize(SourceKind source)
@@ -132,6 +135,7 @@ namespace IoPokeMikuClient.Model
             {
                 Debug.WriteLine(ex.ToString());
             }
+
             return result;
         }
 
@@ -161,6 +165,63 @@ namespace IoPokeMikuClient.Model
             else
             {
                 player.NoteOn((byte)args.PitchInfo.midi);
+            }
+        }
+
+        public void DeviceList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            var sourceDevice = Source as BleClient;
+            if (sourceDevice == null)
+            {
+                return;
+            }
+
+            var currentDevInfo = sourceDevice.DeviceInfo;
+            if(currentDevInfo == null)
+            {
+                return;
+            }
+
+                
+            if(e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                if(e.NewItems.Count == 0)
+                {
+                    Debug.WriteLine("CollectionChanged(Replace) no new item");
+                    return;
+                }
+                var updatedDevInfo = e.NewItems[0] as DeviceInformation;
+                if (updatedDevInfo == null)
+                {
+                    Debug.WriteLine("CollectionChanged(Replace) no device info");
+                    return;
+                }
+
+                if (currentDevInfo.Id == updatedDevInfo.Id)
+                {
+                    Debug.WriteLine("CollectionChanged(Replace) replacing device");
+                    sourceDevice.UpdateDeviceInfo(updatedDevInfo);
+                }
+            }
+            else if(e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                if(e.OldItems.Count == 0)
+                {
+                    Debug.WriteLine("CollectionChanged(Remove) no old item");
+                    return;
+                }
+                var updatedDevInfo = e.OldItems[0] as DeviceInformation;
+                if (updatedDevInfo == null)
+                {
+                    Debug.WriteLine("CollectionChanged(Remove) no device info");
+                    return;
+                }
+
+                if (currentDevInfo.Id == updatedDevInfo.Id)
+                {
+                    Debug.WriteLine("CollectionChanged(Replace) removing device");
+                    sourceDevice.UpdateDeviceInfo(null);
+                }
             }
         }
     }

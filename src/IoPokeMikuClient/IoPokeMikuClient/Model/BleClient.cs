@@ -18,8 +18,17 @@ namespace IoPokeMikuClient.Model
         readonly string kUuidFreqCharEnd = "9033";
         readonly string kUuidGainCharEnd = "9034";
 
+        private readonly object m_deviceInfoLock = new object();
         private DeviceInformation m_deviceInfo;
         private BluetoothLEDevice m_bleDevice;
+
+        private GattCharacteristic m_freqChar;
+        private GattDeviceService m_tunerSvc;
+
+        public DeviceInformation DeviceInfo
+        {
+            get { return m_deviceInfo; }
+        }
 
         public BleClient()
         {
@@ -37,9 +46,20 @@ namespace IoPokeMikuClient.Model
                     m_bleDevice = bleDevice;
                     ret = true;
                     Debug.WriteLine("Connect succeed");
+                } else
+                {
+                    Debug.WriteLine("Connect failed");
                 }
             }
             return ret;
+        }
+
+        public override void UpdateDeviceInfo(DeviceInformation device)
+        {
+            lock (m_deviceInfoLock)
+            {
+                m_deviceInfo = device;
+            }
         }
 
         /// <summary>
@@ -53,13 +73,28 @@ namespace IoPokeMikuClient.Model
             BluetoothLEDevice bleDevice = null;
 
             DevicePairingResult result = null;
-            m_deviceInfo = device;
+            lock (m_deviceInfoLock)
+            {
+                m_deviceInfo = device;
+            }
+            if (device.Pairing.IsPaired)
+            {
+                await  device.Pairing.UnpairAsync();
+                Debug.WriteLine("unpaired");
+                device = await DeviceInformation.CreateFromIdAsync(device.Id);
+                lock (m_deviceInfoLock)
+                {
+                    m_deviceInfo = device;
+                }
+                return null;
+            }
+
             if (!device.Pairing.IsPaired)
             {
-                //result = await device.Pairing.PairAsync();
                 var pairintKinds = DevicePairingKinds.ConfirmOnly;
                 var protectionLevel = DevicePairingProtectionLevel.None;
                 var customPairing = device.Pairing.Custom;
+
                 customPairing.PairingRequested += CustomPairing_PairingRequested;
                 result = await customPairing.PairAsync(pairintKinds, protectionLevel);
                 customPairing.PairingRequested -= CustomPairing_PairingRequested;
@@ -82,18 +117,28 @@ namespace IoPokeMikuClient.Model
                 Debug.WriteLine("Already Paired");
             }
 
-            try
+            for (int i = 0; i < 5; i++)
             {
-                bleDevice = await BluetoothLEDevice.FromIdAsync(device.Id);
-            }
-            catch (Exception ex) when ((uint)ex.HResult == 0x800710df)
-            {
-                Debug.WriteLine("get ble device failed");
-            }
+                await Task.Delay(1000);
+                try
+                {
+                    Debug.WriteLine("trying to open service ... (" + i + "/5)");
+                    bleDevice = await BluetoothLEDevice.FromIdAsync(device.Id);
+                    if (bleDevice != null)
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("get ble device failed");
+                }
 
+            }
             if (bleDevice == null)
             {
                 Debug.WriteLine("ble device failed");
+                return null;
             }
 
             Debug.WriteLine("bleDevice assigned " + bleDevice.DeviceId ?? "null");
@@ -116,12 +161,27 @@ namespace IoPokeMikuClient.Model
 
         private async Task<bool> Subscribe(BluetoothLEDevice bleDevice)
         {
-            var charact = GetFreqChar(bleDevice);
-            if(charact == null)
+            GattCharacteristic charact = null;
+            for (int i = 0; i < 10; i++)
             {
+                Debug.WriteLine("trying to open characteristic ... (" + i + "/10)");
+                charact = GetFreqChar(bleDevice);
+                if (charact != null)
+                {
+                    break;
+                }
+                await Task.Delay(1000);
+                bleDevice = await BluetoothLEDevice.FromIdAsync(bleDevice.DeviceId);
+                if(bleDevice == null)
+                {
+                    return false;
+                }
+            }
+            if (charact == null)
+            {
+                Debug.WriteLine("could not get characteristic");
                 return false;
             }
-
             var status = GattCommunicationStatus.Unreachable;
             try
             {
@@ -131,10 +191,12 @@ namespace IoPokeMikuClient.Model
             catch (UnauthorizedAccessException ex)
             {
                 Debug.WriteLine("failed to subscribe");
+                Debug.WriteLine(ex.ToString());
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("failed to subscribe");
+                Debug.WriteLine("failed to subscribe.");
+                Debug.WriteLine(ex.ToString());
             }
 
             if (status != GattCommunicationStatus.Success)
@@ -146,13 +208,16 @@ namespace IoPokeMikuClient.Model
             bool ret = false;
             try
             {
+                charact.ValueChanged -= Charact_ValueChanged;
                 charact.ValueChanged += Charact_ValueChanged;
+                m_freqChar = charact;
                 Debug.WriteLine("subscribe succeed " + charact.Uuid);
                 ret = true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("failed to subsctive " + charact.Uuid);
+                Debug.WriteLine("failed to subscribe " + charact.Uuid);
+                Debug.WriteLine(ex.ToString());
             }
             return ret;
         }
@@ -172,15 +237,29 @@ namespace IoPokeMikuClient.Model
             var tunerServices = from x in bleDevice.GattServices where x.Uuid.EndsWith(kUuidTunerSvcEnd) select x;
             if (!tunerServices.Any())
             {
+                Debug.WriteLine("no tuner services");
                 return null;
             }
 
-            var tuner = bleDevice.GattServices.FirstOrDefault(w => w.Uuid.EndsWith(kUuidTunerSvcEnd));
-            if (tuner == null)
+            Debug.WriteLine("services count=" + services.Count());
+
+            GattCharacteristic freqChars = null;
+
+            foreach (var tuner in services)
             {
-                return null;
+                var allChars = tuner.GetAllCharacteristics();
+                foreach (var x in allChars)
+                {
+                    Debug.WriteLine("chars " + x.Uuid);
+                }
+
+                freqChars = tuner.GetAllCharacteristics().FirstOrDefault(w => w.Uuid.EndsWith(kUuidFreqCharEnd));
+                if (freqChars != null)
+                {
+                    m_tunerSvc = tuner;
+                    break;
+                }
             }
-            var freqChars = tuner.GetAllCharacteristics().FirstOrDefault(w => w.Uuid.EndsWith(kUuidFreqCharEnd));
             return freqChars;
         }
 

@@ -108,11 +108,11 @@ namespace IoPokeMikuClient.Model
             // If devices are found, enumerate them and add them to the list
             else
             {
-                // Start with a clean list
-                m_deviceList.Clear();
-
                 await DispatcherHelper.RunAsync(() =>
                 {
+                    // Start with a clean list
+                    m_deviceList.Clear();
+
                     foreach (var device in m_deviceInformationCollection)
                     {
                         m_deviceList.Add(device);
